@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Balochistan District Boundary Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Inter, Arial, sans-serif; background:#e5e7eb; color:#0f172a; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+    .ppt { width:1280px; height:720px; background:#f6f7fb; border-radius:18px; overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.2); position:relative; }
+    .blob { position:absolute; border-radius:999px; filter:blur(75px); opacity:.55; z-index:0; pointer-events:none; }
+    .b1 { width:320px; height:320px; background:#bfdbfe; left:-90px; top:60px; }
+    .b2 { width:430px; height:430px; background:#ddd6fe; right:-80px; top:120px; }
+    .b3 { width:360px; height:360px; background:#bbf7d0; left:35%; bottom:-120px; }
+    main { width:100%; height:100%; padding:18px; overflow:hidden; position:relative; z-index:1; }
+    header { display:flex; justify-content:space-between; gap:16px; align-items:center; margin-bottom:12px; }
+    .badge { display:inline-flex; align-items:center; gap:8px; padding:8px 13px; background:rgba(255,255,255,.72); border:1px solid rgba(255,255,255,.9); border-radius:999px; color:#475569; font-size:12px; box-shadow:0 8px 22px rgba(15,23,42,.06); backdrop-filter:blur(18px); }
+    h1 { font-size:31px; letter-spacing:-1.5px; margin-top:8px; max-width:850px; line-height:1; }
+    .subtitle { color:#64748b; line-height:1.45; max-width:560px; margin-top:6px; font-size:13px; }
+    .top-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:9px; background:rgba(255,255,255,.72); border:1px solid rgba(255,255,255,.9); border-radius:24px; min-width:350px; box-shadow:0 18px 40px rgba(15,23,42,.08); backdrop-filter:blur(18px); }
+    .top-stats div { text-align:center; padding:10px; }
+    .top-stats strong { display:block; font-size:21px; }
+    .top-stats span { color:#64748b; font-size:11px; }
+    .layout { display:grid; grid-template-columns:1.38fr .62fr; gap:18px; }
+    .panel { background:rgba(255,255,255,.74); border:1px solid rgba(255,255,255,.92); border-radius:28px; box-shadow:0 18px 40px rgba(148,163,184,.32); backdrop-filter:blur(18px); }
+    .map-panel { padding:18px; }
+    .panel-head { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:12px; }
+    .panel-head h2 { font-size:18px; }
+    .panel-head p { color:#64748b; font-size:12px; margin-top:3px; }
+    .search { position:relative; width:min(100%,280px); }
+    .search input { width:100%; padding:11px 14px 11px 38px; border-radius:16px; border:1px solid #e2e8f0; outline:none; background:rgba(255,255,255,.9); font-size:13px; }
+    .search span { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#94a3b8; z-index:2; }
+    #map { height:430px; width:100%; border-radius:24px; overflow:hidden; background:#edf2f7; }
+    .leaflet-container { font-family:Inter, Arial, sans-serif; background:#edf2f7; }
+    .leaflet-control-zoom { border:0!important; box-shadow:0 14px 28px rgba(15,23,42,.14)!important; }
+    .leaflet-control-zoom a { border:0!important; color:#0f172a!important; }
+    .district-label { background:rgba(255,255,255,.9); border:1px solid rgba(255,255,255,.95); color:#0f172a; border-radius:999px; padding:3px 7px; font-size:10px; font-weight:800; box-shadow:0 8px 18px rgba(15,23,42,.12); }
+    .info-card { overflow:hidden; }
+    .hero { padding:20px; color:white; background:linear-gradient(135deg,#2563eb,#7c3aed); min-height:150px; transition:.3s ease; }
+    .hero-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+    .icon-box, .code-box { background:rgba(255,255,255,.2); border-radius:16px; padding:10px; font-weight:800; backdrop-filter:blur(14px); }
+    .hero small { color:rgba(255,255,255,.75); font-weight:700; font-size:11px; }
+    .hero h3 { font-size:24px; letter-spacing:-1px; margin-top:4px; line-height:1.05; }
+    .hero p { color:rgba(255,255,255,.82); margin-top:6px; font-size:12px; }
+    .stats { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; padding:14px; }
+    .stat { background:rgba(255,255,255,.76); border:1px solid rgba(226,232,240,.9); border-radius:18px; padding:12px; }
+    .stat .emoji { width:30px; height:30px; background:#0f172a; color:white; display:grid; place-items:center; border-radius:10px; margin-bottom:8px; font-size:13px; }
+    .stat label { color:#64748b; font-size:11px; }
+    .stat strong { display:block; margin-top:3px; font-size:15px; }
+    .summary { margin:0 14px 12px; padding:13px; border-radius:18px; background:#0f172a; color:white; line-height:1.45; font-size:12px; }
+    .summary span { display:block; color:rgba(255,255,255,.55); font-size:11px; margin-bottom:5px; }
+    .photo-section { margin:0 14px 14px; }
+    .photo-title { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .photo-title h4 { font-size:13px; }
+    .photo-title span { color:#64748b; font-size:11px; }
+    .photo-grid { display:grid; grid-template-columns:1.15fr .85fr; gap:8px; }
+    .photo-grid img { width:100%; height:79px; object-fit:cover; border-radius:14px; background:#e2e8f0; display:block; }
+    .photo-grid img:first-child { height:166px; }
+    .photo-side { display:grid; gap:8px; }
+    .photo-caption { margin-top:7px; color:#64748b; font-size:10px; line-height:1.35; }
+    .status { margin-top:10px; color:#64748b; font-size:11px; line-height:1.45; }
+    .source-note { margin-top:8px; padding:10px 12px; border-radius:16px; background:rgba(15,23,42,.06); color:#475569; font-size:11px; line-height:1.4; }
+    .upload-box { margin-top:8px; display:none; }
+    .upload-box input { width:100%; padding:9px; border:1px dashed #94a3b8; border-radius:14px; background:white; font-size:11px; }
+    @media (max-width:1300px) { .ppt { transform:scale(calc(100vw / 1280)); transform-origin:center; } }
+    @media (max-height:760px) { .ppt { transform:scale(calc(100vh / 720)); transform-origin:center; } }
+  </style>
+</head>
+<body>
+  <div class="ppt">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+    <main>
+      <header>
+        <div>
+          <div class="badge">Real Boundary District Dashboard</div>
+          <h1>Balochistan District Boundary Map</h1>
+          <p class="subtitle">Interactive district map with offline fallback. Click any district to view the infographic panel and relevant images.</p>
+        </div>
+        <div class="top-stats">
+          <div><strong id="districtCount">--</strong><span>Districts Loaded</span></div>
+          <div><strong id="dataMode">Local</strong><span>Data Mode</span></div>
+          <div><strong>16:9</strong><span>PPT Layout</span></div>
+        </div>
+      </header>
+      <section class="layout">
+        <div class="panel map-panel">
+          <div class="panel-head">
+            <div><h2>Boundary Map</h2><p id="mapStatus">Loading boundaries...</p></div>
+            <div class="search"><span>🔎</span><input id="searchInput" placeholder="Search district..." /></div>
+          </div>
+          <div id="map"></div>
+          <p class="status">Tip: This version will not crash when online GeoJSON fails. It uses embedded fallback boundaries and also supports manual GeoJSON upload.</p>
+          <div class="source-note" id="sourceNote">Using embedded sample boundary polygons. For official publication, upload verified Government or Survey of Pakistan district GeoJSON.</div>
+          <div class="upload-box" id="uploadBox">
+            <input type="file" id="geojsonUpload" accept=".json,.geojson" />
+          </div>
+        </div>
+        <aside>
+          <div class="panel info-card">
+            <div class="hero" id="hero">
+              <div class="hero-top"><div class="icon-box">📍</div><div class="code-box" id="codeBox">--</div></div>
+              <small>Selected District</small>
+              <h3 id="districtName">Select District</h3>
+              <p id="divisionName">Balochistan Province</p>
+            </div>
+            <div class="stats">
+              <div class="stat"><div class="emoji">👥</div><label>Population</label><strong id="population">Sample</strong></div>
+              <div class="stat"><div class="emoji">🏫</div><label>Schools</label><strong id="schools">Sample</strong></div>
+              <div class="stat"><div class="emoji">🎒</div><label>Enrollment</label><strong id="enrollment">Sample</strong></div>
+              <div class="stat"><div class="emoji">🎯</div><label>Focus</label><strong id="focus">Sample</strong></div>
+            </div>
+            <div class="summary"><span>Infographic Summary</span><p id="summaryText">Click any district to show the district infographic.</p></div>
+            <div class="photo-section">
+              <div class="photo-title"><h4>Relevant District Images</h4><span id="photoLabel">Auto preview</span></div>
+              <div class="photo-grid">
+                <img id="districtPhoto1" alt="District image 1" />
+                <div class="photo-side">
+                  <img id="districtPhoto2" alt="District image 2" />
+                  <img id="districtPhoto3" alt="District image 3" />
+                </div>
+              </div>
+              <p class="photo-caption">Use official field photos for final reporting. These previews are automatic placeholders.</p>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const sampleInfo = {
+      population: ["0.18M", "0.32M", "0.46M", "0.61M", "0.74M", "0.95M", "1.2M"],
+      focus: ["Education Access", "Girls Enrollment", "School Improvement", "Skills & Trades", "Community Mobilization"]
+    };
+    const gradients = ["linear-gradient(135deg,#2563eb,#7c3aed)", "linear-gradient(135deg,#0ea5e9,#06b6d4)", "linear-gradient(135deg,#10b981,#14b8a6)", "linear-gradient(135deg,#f97316,#f59e0b)", "linear-gradient(135deg,#f43f5e,#ec4899)", "linear-gradient(135deg,#64748b,#71717a)"];
+    const imageTopics = {
+      Quetta: ["quetta city balochistan", "quetta school pakistan", "quetta mountains"],
+      Gwadar: ["gwadar port pakistan", "gwadar coast", "gwadar balochistan"],
+      Kech: ["turbat kech balochistan", "kech balochistan", "balochistan village"],
+      Panjgur: ["panjgur balochistan", "date palms balochistan", "panjgur landscape"],
+      Khuzdar: ["khuzdar balochistan", "khuzdar mountains", "balochistan road"],
+      Loralai: ["loralai balochistan", "loralai hills", "balochistan school"],
+      Pishin: ["pishin balochistan", "pishin valley", "balochistan orchard"],
+      Chaman: ["chaman balochistan", "pakistan afghanistan border", "chaman city"],
+      Zhob: ["zhob balochistan", "zhob valley", "balochistan mountains"],
+      Sibi: ["sibi balochistan", "sibi city", "balochistan desert"],
+      Kalat: ["kalat balochistan", "kalat city", "balochistan heritage"],
+      Kharan: ["kharan desert balochistan", "kharan balochistan", "balochistan desert"],
+      Chagai: ["chagai balochistan", "ras koh hills", "balochistan landscape"]
+    };
+    const fallbackImageTopics = ["balochistan pakistan landscape", "balochistan school children", "balochistan village road"];
+
+    const districtsForFallback = [
+      { name:"Chagai", coords:[[28.4,60.7],[29.3,61.8],[29.0,63.1],[28.0,63.2],[27.4,62.2],[27.7,61.0]] },
+      { name:"Kharan", coords:[[27.4,62.2],[28.0,63.2],[28.0,64.4],[27.0,64.7],[26.3,63.8],[26.7,62.8]] },
+      { name:"Nushki", coords:[[29.0,63.1],[29.6,64.0],[29.1,65.1],[28.1,65.0],[28.0,64.4],[28.0,63.2]] },
+      { name:"Washuk", coords:[[26.3,63.8],[27.0,64.7],[26.7,65.9],[25.7,66.1],[25.1,64.9],[25.6,64.0]] },
+      { name:"Panjgur", coords:[[26.7,65.9],[27.1,66.9],[26.5,67.5],[25.6,67.2],[25.1,66.4],[25.7,66.1]] },
+      { name:"Kech", coords:[[25.6,67.2],[26.5,67.5],[26.3,68.7],[25.4,69.1],[24.8,68.2],[24.9,67.4]] },
+      { name:"Gwadar", coords:[[24.8,68.2],[25.4,69.1],[25.0,70.2],[24.3,70.3],[24.1,69.1]] },
+      { name:"Awaran", coords:[[26.3,68.7],[27.2,69.4],[27.0,70.5],[26.0,70.8],[25.4,69.1]] },
+      { name:"Khuzdar", coords:[[27.2,69.4],[28.0,69.7],[28.3,70.8],[27.4,71.5],[27.0,70.5]] },
+      { name:"Lasbela", coords:[[26.0,70.8],[27.4,71.5],[27.0,72.2],[25.7,72.4],[25.0,71.5]] },
+      { name:"Hub", coords:[[25.7,72.4],[27.0,72.2],[26.6,73.1],[25.6,73.2],[24.9,72.6]] },
+      { name:"Kalat", coords:[[28.1,65.0],[29.1,65.1],[29.2,66.2],[28.6,67.1],[27.8,66.7],[27.1,66.9],[26.7,65.9]] },
+      { name:"Mustang", coords:[[29.2,66.2],[30.0,66.7],[30.0,67.5],[29.2,68.0],[28.6,67.1]] },
+      { name:"Quetta", coords:[[30.0,66.7],[30.8,66.8],[30.8,67.5],[30.0,67.5]] },
+      { name:"Pishin", coords:[[30.8,66.8],[31.4,67.1],[31.3,68.0],[30.8,68.1],[30.8,67.5]] },
+      { name:"Killa Abdullah", coords:[[31.4,67.1],[31.9,67.3],[31.8,68.2],[31.3,68.0]] },
+      { name:"Chaman", coords:[[31.8,68.2],[32.2,68.6],[31.8,69.2],[31.3,68.8],[31.3,68.0]] },
+      { name:"Ziarat", coords:[[30.0,67.5],[30.8,67.5],[30.9,68.4],[30.2,68.8],[29.7,68.2]] },
+      { name:"Loralai", coords:[[30.2,68.8],[30.9,68.4],[31.2,69.3],[30.7,70.1],[29.9,69.6]] },
+      { name:"Killa Saifullah", coords:[[31.3,68.8],[31.8,69.2],[31.7,70.3],[30.7,70.1],[31.2,69.3]] },
+      { name:"Zhob", coords:[[31.7,70.3],[32.3,70.9],[31.9,72.0],[30.9,71.5],[30.7,70.1]] },
+      { name:"Sherani", coords:[[32.3,70.9],[32.7,71.8],[32.1,72.4],[31.9,72.0]] },
+      { name:"Musakhel", coords:[[30.9,71.5],[31.9,72.0],[31.5,73.0],[30.6,72.8],[30.2,71.8]] },
+      { name:"Barkhan", coords:[[30.2,71.8],[30.6,72.8],[29.8,73.5],[29.1,72.9],[29.4,72.0]] },
+      { name:"Kohlu", coords:[[29.4,72.0],[29.1,72.9],[28.3,72.8],[28.1,71.8],[28.6,71.2]] },
+      { name:"Dera Bugti", coords:[[28.3,72.8],[29.1,72.9],[28.7,73.8],[27.8,73.8],[27.4,73.0]] },
+      { name:"Sibi", coords:[[29.7,68.2],[30.2,68.8],[29.9,69.6],[29.1,69.4],[28.7,68.5]] },
+      { name:"Harnai", coords:[[29.1,69.4],[29.9,69.6],[29.4,70.5],[28.6,70.4],[28.4,69.6]] },
+      { name:"Kachhi", coords:[[28.4,69.6],[28.6,70.4],[28.1,71.8],[27.4,71.5],[27.3,70.4]] },
+      { name:"Jhal Magsi", coords:[[27.4,71.5],[28.1,71.8],[27.4,73.0],[26.8,72.6],[26.8,71.8]] },
+      { name:"Nasirabad", coords:[[27.4,73.0],[27.8,73.8],[27.2,74.3],[26.6,73.9],[26.8,72.6]] },
+      { name:"Jafarabad", coords:[[26.6,73.9],[27.2,74.3],[26.9,74.8],[26.2,74.6],[26.1,74.0]] },
+      { name:"Sohbatpur", coords:[[26.2,74.6],[26.9,74.8],[26.7,75.3],[26.0,75.0]] },
+      { name:"Usta Muhammad", coords:[[26.1,74.0],[26.6,73.9],[26.2,74.6],[25.8,74.4]] },
+      { name:"Surab", coords:[[27.8,66.7],[28.6,67.1],[28.7,68.5],[28.0,69.7],[27.2,69.4],[26.3,68.7],[26.5,67.5],[27.1,66.9]] }
+    ];
+
+    function fallbackFeatureCollection() {
+      return { type:"FeatureCollection", features:districtsForFallback.map(function(d) { return { type:"Feature", properties:{ DISTRICT:d.name, PROVINCE:"Balochistan" }, geometry:{ type:"Polygon", coordinates:[d.coords.map(function(c) { return [c[1], c[0]]; })] } }; }) };
+    }
+    function imageSetForDistrict(name) {
+      const topics = imageTopics[name] || fallbackImageTopics.map(function(topic) { return name + " " + topic; });
+      return topics.map(function(topic, i) { const size = i === 0 ? "900x650" : "600x420"; return "https://source.unsplash.com/" + size + "/?" + encodeURIComponent(topic); });
+    }
+    function setDistrictImages(name) {
+      const imgs = imageSetForDistrict(name);
+      document.getElementById("districtPhoto1").src = imgs[0];
+      document.getElementById("districtPhoto2").src = imgs[1];
+      document.getElementById("districtPhoto3").src = imgs[2];
+      document.getElementById("photoLabel").textContent = name;
+    }
+
+    const map = L.map("map", { zoomControl:true, attributionControl:true });
+    map.setView([28.3, 66.4], 6);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { maxZoom:11, attribution:"OpenStreetMap, CARTO" }).addTo(map);
+
+    let geoLayer;
+    let labelLayer = L.layerGroup().addTo(map);
+    let allDistricts = [];
+    let selectedName = "";
+    let searchText = "";
+    const searchInput = document.getElementById("searchInput");
+    const mapStatus = document.getElementById("mapStatus");
+    const uploadBox = document.getElementById("uploadBox");
+    const sourceNote = document.getElementById("sourceNote");
+
+    function getDistrictName(feature) { const p = feature.properties || {}; return p.NAME_3 || p.NAME_2 || p.ADM3_EN || p.ADM2_EN || p.DISTRICT || p.DIST_NAME || p.name || p.Name || "Unknown District"; }
+    function getProvinceName(feature) { const p = feature.properties || {}; return p.NAME_1 || p.PROVINCE || p.ADM1_EN || p.province || ""; }
+    function isBalochistan(feature) { const province = String(getProvinceName(feature)).toLowerCase(); return province.indexOf("balochistan") >= 0 || province.indexOf("baluchistan") >= 0; }
+    function districtCode(name) { return name.split(" ").filter(Boolean).map(function(w) { return w[0]; }).join("").slice(0,3).toUpperCase(); }
+    function infoForDistrict(name, index) { return { population:sampleInfo.population[index % sampleInfo.population.length], schools:120 + ((index + 2) * 43) % 620, enrollment:8000 + ((index + 3) * 2300) % 78000, focus:sampleInfo.focus[index % sampleInfo.focus.length], gradient:gradients[index % gradients.length] }; }
+    function styleFeature(feature) {
+      const name = getDistrictName(feature);
+      const index = allDistricts.findIndex(function(d) { return d.name === name; });
+      const isSelected = name === selectedName;
+      const visible = !searchText || name.toLowerCase().indexOf(searchText.toLowerCase()) >= 0;
+      return { color:isSelected ? "#0f172a" : "#ffffff", weight:isSelected ? 3 : 1.2, fillColor:["#dbeafe", "#dcfce7", "#fae8ff", "#ffedd5", "#e0f2fe", "#ede9fe"][Math.max(index, 0) % 6], fillOpacity:visible ? (isSelected ? 0.82 : 0.62) : 0.12, opacity:visible ? 1 : 0.22 };
+    }
+    function updateInfo(feature) {
+      const name = getDistrictName(feature);
+      const index = allDistricts.findIndex(function(d) { return d.name === name; });
+      const info = infoForDistrict(name, Math.max(index, 0));
+      selectedName = name;
+      document.getElementById("hero").style.background = info.gradient;
+      document.getElementById("codeBox").textContent = districtCode(name);
+      document.getElementById("districtName").textContent = name;
+      document.getElementById("divisionName").textContent = "Balochistan Province";
+      document.getElementById("population").textContent = info.population;
+      document.getElementById("schools").textContent = info.schools.toLocaleString();
+      document.getElementById("enrollment").textContent = info.enrollment.toLocaleString();
+      document.getElementById("focus").textContent = info.focus;
+      document.getElementById("summaryText").textContent = name + " is selected. Replace sample values with official EMIS, census, school, enrollment, or programme data.";
+      setDistrictImages(name);
+      if (geoLayer) geoLayer.setStyle(styleFeature);
+    }
+    function renderLabels() {
+      labelLayer.clearLayers();
+      allDistricts.forEach(function(d) {
+        if (searchText && d.name.toLowerCase().indexOf(searchText.toLowerCase()) < 0) return;
+        const center = d.layer.getBounds().getCenter();
+        L.marker(center, { interactive:false, icon:L.divIcon({ className:"district-label", html:d.name, iconSize:null }) }).addTo(labelLayer);
+      });
+    }
+    function loadGeoJSON(data, modeLabel) {
+      const features = data.features || [];
+      const balochistanFeatures = features.filter(isBalochistan);
+      const finalData = { type:"FeatureCollection", features:balochistanFeatures.length ? balochistanFeatures : features };
+      if (geoLayer) geoLayer.remove();
+      allDistricts = [];
+      geoLayer = L.geoJSON(finalData, { style:styleFeature, onEachFeature:function(feature, layer) {
+        const name = getDistrictName(feature);
+        layer.on({ click:function() { updateInfo(feature); }, mouseover:function() { layer.setStyle({ weight:3, color:"#0f172a", fillOpacity:.78 }); }, mouseout:function() { if (geoLayer) geoLayer.setStyle(styleFeature); } });
+        layer.bindTooltip(name, { sticky:true, direction:"top" });
+        allDistricts.push({ name:name, feature:feature, layer:layer });
+      }}).addTo(map);
+      allDistricts = allDistricts.filter(function(d, i, arr) { return arr.findIndex(function(x) { return x.name === d.name; }) === i; });
+      document.getElementById("districtCount").textContent = allDistricts.length;
+      document.getElementById("dataMode").textContent = modeLabel;
+      mapStatus.textContent = allDistricts.length + " Balochistan district boundaries loaded.";
+      map.fitBounds(geoLayer.getBounds(), { padding:[18,18] });
+      renderLabels();
+      if (allDistricts.length) updateInfo(allDistricts[0].feature);
+    }
+    async function tryLoadRemote() {
+      const urls = [
+        "https://raw.githubusercontent.com/PakData/GISData/master/PAK-GeoJSON/PAK_adm3.json",
+        "https://cdn.jsdelivr.net/gh/PakData/GISData@master/PAK-GeoJSON/PAK_adm3.json"
+      ];
+      for (let i = 0; i < urls.length; i++) {
+        try {
+          const response = await fetch(urls[i], { cache:"no-store" });
+          if (!response.ok) throw new Error("HTTP " + response.status);
+          const data = await response.json();
+          sourceNote.textContent = "Using remote public GeoJSON. For official publication, verify boundaries with the latest notified Government or Survey of Pakistan data.";
+          uploadBox.style.display = "block";
+          loadGeoJSON(data, "Remote");
+          return;
+        } catch (error) {
+          console.warn("Remote boundary source failed:", urls[i], error);
+        }
+      }
+      sourceNote.textContent = "Remote GeoJSON could not be fetched, so the dashboard loaded embedded fallback boundaries. Upload an official local GeoJSON for final accuracy.";
+      uploadBox.style.display = "block";
+      loadGeoJSON(fallbackFeatureCollection(), "Fallback");
+    }
+    searchInput.addEventListener("input", function(e) { searchText = e.target.value; if (geoLayer) geoLayer.setStyle(styleFeature); renderLabels(); });
+    document.getElementById("geojsonUpload").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) { try { loadGeoJSON(JSON.parse(evt.target.result), "Upload"); sourceNote.textContent = "Using uploaded local GeoJSON file."; } catch (error) { alert("Invalid GeoJSON file. Please upload a valid .geojson or .json file."); } };
+      reader.readAsText(file);
+    });
+
+    function runTests() {
+      console.assert(districtCode("Killa Abdullah") === "KA", "districtCode should create initials");
+      console.assert(fallbackFeatureCollection().features.length >= 30, "fallback should include many Balochistan districts");
+      console.assert(isBalochistan({ properties:{ PROVINCE:"Balochistan" } }) === true, "province filter should detect Balochistan");
+      console.assert(getDistrictName({ properties:{ DISTRICT:"Quetta" } }) === "Quetta", "district name should read DISTRICT property");
+    }
+    runTests();
+    tryLoadRemote();
+  </script>
+</body>
+</html>
