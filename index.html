@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BarChart,
@@ -25,13 +25,175 @@ const palette = {
   accent2: "#62d6ce",
 };
 
+function IconBase({ children, size = 20, className = "" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
+  );
+}
+
+const Icons = {
+  MapPinned: (props) => (
+    <IconBase {...props}>
+      <path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3z" />
+      <path d="M9 3v15" />
+      <path d="M15 6v15" />
+      <circle cx="12" cy="10.5" r="2.5" />
+    </IconBase>
+  ),
+  Users: (props) => (
+    <IconBase {...props}>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </IconBase>
+  ),
+  Home: (props) => (
+    <IconBase {...props}>
+      <path d="M3 10.5 12 3l9 7.5" />
+      <path d="M5 10v10h14V10" />
+      <path d="M9 20v-6h6v6" />
+    </IconBase>
+  ),
+  Wheat: (props) => (
+    <IconBase {...props}>
+      <path d="M12 2v20" />
+      <path d="M8 6c-2 0-3-2-3-2s1 4 4 4" />
+      <path d="M16 6c2 0 3-2 3-2s-1 4-4 4" />
+      <path d="M8 12c-2 0-3-2-3-2s1 4 4 4" />
+      <path d="M16 12c2 0 3-2 3-2s-1 4-4 4" />
+    </IconBase>
+  ),
+  Droplets: (props) => (
+    <IconBase {...props}>
+      <path d="M7 16.5A4.5 4.5 0 0 0 11.5 12C11.5 9 7 3 7 3S2.5 9 2.5 12A4.5 4.5 0 0 0 7 16.5z" />
+      <path d="M17.5 21a4 4 0 0 0 4-4c0-2.7-4-8-4-8s-4 5.3-4 8a4 4 0 0 0 4 4z" />
+    </IconBase>
+  ),
+  Mountain: (props) => (
+    <IconBase {...props}>
+      <path d="m3 20 7-14 4 8 2-4 5 10H3z" />
+    </IconBase>
+  ),
+  PawPrint: (props) => (
+    <IconBase {...props}>
+      <circle cx="6" cy="7" r="2" />
+      <circle cx="18" cy="7" r="2" />
+      <circle cx="9" cy="4" r="2" />
+      <circle cx="15" cy="4" r="2" />
+      <path d="M8 15c0-2.2 1.8-4 4-4s4 1.8 4 4c0 2-1.6 3-4 3s-4-1-4-3z" />
+    </IconBase>
+  ),
+  Building2: (props) => (
+    <IconBase {...props}>
+      <path d="M6 22V3h12v19" />
+      <path d="M4 22h16" />
+      <path d="M9 7h1" />
+      <path d="M14 7h1" />
+      <path d="M9 11h1" />
+      <path d="M14 11h1" />
+    </IconBase>
+  ),
+  Layers: (props) => (
+    <IconBase {...props}>
+      <path d="m12 2 9 5-9 5-9-5 9-5z" />
+      <path d="m3 12 9 5 9-5" />
+      <path d="m3 17 9 5 9-5" />
+    </IconBase>
+  ),
+  Activity: (props) => (
+    <IconBase {...props}>
+      <path d="M3 12h4l3-8 4 16 3-8h4" />
+    </IconBase>
+  ),
+  Sparkles: (props) => (
+    <IconBase {...props}>
+      <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" />
+      <path d="M5 3v4" />
+      <path d="M3 5h4" />
+      <path d="M19 17v4" />
+      <path d="M17 19h4" />
+    </IconBase>
+  ),
+};
+
+const districts = [
+  { id: "quetta", name: "Quetta", pop: 2269, density: 890, ucPop: 410, adult: 1240, houses: 308, crops: 28, agriculture: 62, livestock: 318, facilities: 42, minerals: 38, water: 74, waterCompare: 82 },
+  { id: "pishin", name: "Pishin", pop: 835, density: 240, ucPop: 172, adult: 441, houses: 111, crops: 46, agriculture: 71, livestock: 690, facilities: 21, minerals: 24, water: 63, waterCompare: 68 },
+  { id: "chaman", name: "Chaman", pop: 466, density: 218, ucPop: 92, adult: 235, houses: 62, crops: 26, agriculture: 44, livestock: 410, facilities: 12, minerals: 18, water: 43, waterCompare: 49 },
+  { id: "zhob", name: "Zhob", pop: 612, density: 82, ucPop: 126, adult: 307, houses: 81, crops: 32, agriculture: 49, livestock: 741, facilities: 18, minerals: 29, water: 51, waterCompare: 57 },
+  { id: "loralai", name: "Loralai", pop: 498, density: 106, ucPop: 98, adult: 258, houses: 69, crops: 58, agriculture: 76, livestock: 581, facilities: 19, minerals: 35, water: 59, waterCompare: 66 },
+  { id: "sibi", name: "Sibi", pop: 315, density: 68, ucPop: 73, adult: 165, houses: 44, crops: 54, agriculture: 69, livestock: 347, facilities: 14, minerals: 31, water: 49, waterCompare: 52 },
+  { id: "kacchi", name: "Kachhi", pop: 383, density: 54, ucPop: 82, adult: 199, houses: 52, crops: 64, agriculture: 73, livestock: 421, facilities: 13, minerals: 27, water: 57, waterCompare: 61 },
+  { id: "jafarabad", name: "Jafarabad", pop: 625, density: 298, ucPop: 144, adult: 316, houses: 90, crops: 77, agriculture: 84, livestock: 506, facilities: 16, minerals: 11, water: 68, waterCompare: 74 },
+  { id: "nasirabad", name: "Nasirabad", pop: 563, density: 244, ucPop: 128, adult: 289, houses: 82, crops: 74, agriculture: 81, livestock: 472, facilities: 17, minerals: 13, water: 66, waterCompare: 70 },
+  { id: "khuzdar", name: "Khuzdar", pop: 997, density: 74, ucPop: 206, adult: 508, houses: 136, crops: 48, agriculture: 67, livestock: 899, facilities: 23, minerals: 76, water: 58, waterCompare: 63 },
+  { id: "kalat", name: "Kalat", pop: 480, density: 52, ucPop: 94, adult: 246, houses: 65, crops: 42, agriculture: 59, livestock: 544, facilities: 17, minerals: 71, water: 47, waterCompare: 53 },
+  { id: "mastung", name: "Mastung", pop: 313, density: 80, ucPop: 72, adult: 161, houses: 43, crops: 44, agriculture: 61, livestock: 338, facilities: 12, minerals: 46, water: 52, waterCompare: 55 },
+  { id: "chagai", name: "Chagai", pop: 281, density: 10, ucPop: 59, adult: 148, houses: 39, crops: 15, agriculture: 35, livestock: 264, facilities: 8, minerals: 92, water: 38, waterCompare: 42 },
+  { id: "nushki", name: "Nushki", pop: 206, density: 18, ucPop: 44, adult: 109, houses: 29, crops: 20, agriculture: 43, livestock: 224, facilities: 9, minerals: 54, water: 41, waterCompare: 45 },
+  { id: "kharan", name: "Kharan", pop: 237, density: 12, ucPop: 49, adult: 125, houses: 33, crops: 17, agriculture: 39, livestock: 251, facilities: 8, minerals: 68, water: 35, waterCompare: 39 },
+  { id: "washuk", name: "Washuk", pop: 176, density: 8, ucPop: 37, adult: 92, houses: 25, crops: 12, agriculture: 31, livestock: 214, facilities: 7, minerals: 63, water: 33, waterCompare: 37 },
+  { id: "panjgur", name: "Panjgur", pop: 414, density: 27, ucPop: 91, adult: 215, houses: 56, crops: 35, agriculture: 57, livestock: 377, facilities: 11, minerals: 51, water: 45, waterCompare: 50 },
+  { id: "kech", name: "Kech", pop: 907, density: 52, ucPop: 188, adult: 468, houses: 124, crops: 43, agriculture: 64, livestock: 502, facilities: 20, minerals: 33, water: 56, waterCompare: 60 },
+  { id: "gwadar", name: "Gwadar", pop: 262, density: 36, ucPop: 57, adult: 139, houses: 36, crops: 11, agriculture: 29, livestock: 92, facilities: 10, minerals: 18, water: 48, waterCompare: 54 },
+  { id: "lasbela", name: "Lasbela", pop: 406, density: 29, ucPop: 87, adult: 210, houses: 55, crops: 39, agriculture: 55, livestock: 318, facilities: 16, minerals: 57, water: 53, waterCompare: 59 },
+  { id: "hub", name: "Hub", pop: 394, density: 138, ucPop: 84, adult: 212, houses: 59, crops: 23, agriculture: 41, livestock: 190, facilities: 14, minerals: 49, water: 61, waterCompare: 65 },
+];
+
+const metricConfig = {
+  provincePop: { label: "Cities Population (Province)", icon: Icons.Users, suffix: "K", key: "pop" },
+  districtPop: { label: "Cities Population (District)", icon: Icons.MapPinned, suffix: "K", key: "pop" },
+  density: { label: "Population Density", icon: Icons.Activity, suffix: "/km²", key: "density" },
+  ucPop: { label: "UC Population", icon: Icons.Layers, suffix: "K", key: "ucPop" },
+  adult: { label: "Adult Population", icon: Icons.Users, suffix: "K", key: "adult" },
+  housing: { label: "Housing Map", icon: Icons.Home, suffix: "K", key: "houses" },
+  ucHouses: { label: "UC Houses", icon: Icons.Building2, suffix: "K", key: "houses" },
+  crop: { label: "Crop Maps", icon: Icons.Wheat, suffix: "%", key: "crops" },
+  agriculture: { label: "Agriculture Data", icon: Icons.Wheat, suffix: "%", key: "agriculture" },
+  livestock: { label: "Livestock Total", icon: Icons.PawPrint, suffix: "K", key: "livestock" },
+  facilities: { label: "Livestock Facilities", icon: Icons.Building2, suffix: "", key: "facilities" },
+  mineral: { label: "Mineral Map", icon: Icons.Mountain, suffix: "%", key: "minerals" },
+  water: { label: "Water Schemes (District)", icon: Icons.Droplets, suffix: "%", key: "water" },
+  waterCompare: { label: "Water Comparison", icon: Icons.Droplets, suffix: "%", key: "waterCompare" },
+};
+
 const MAP = { width: 700, height: 820 };
-const GEOJSON_URL = "https://raw.githubusercontent.com/PakData/GISData/master/PAK-GeoJSON/PAK_adm3.json";
 
-const fallbackProvincePath =
-  "M95,205 C130,158 196,122 270,110 C328,100 377,123 424,125 C482,128 552,151 615,202 C653,233 660,270 626,301 C596,329 562,334 558,374 C553,424 608,454 586,505 C566,553 512,566 488,613 C462,665 505,704 463,743 C421,782 359,736 303,740 C248,744 212,793 158,760 C114,733 117,667 86,625 C52,579 28,536 55,486 C80,440 127,419 133,371 C139,321 95,298 78,254 C68,229 76,214 95,205 Z";
+const provincePath = [
+  "M95,205",
+  "C130,158 196,122 270,110",
+  "C328,100 377,123 424,125",
+  "C482,128 552,151 615,202",
+  "C653,233 660,270 626,301",
+  "C596,329 562,334 558,374",
+  "C553,424 608,454 586,505",
+  "C566,553 512,566 488,613",
+  "C462,665 505,704 463,743",
+  "C421,782 359,736 303,740",
+  "C248,744 212,793 158,760",
+  "C114,733 117,667 86,625",
+  "C52,579 28,536 55,486",
+  "C80,440 127,419 133,371",
+  "C139,321 95,298 78,254",
+  "C68,229 76,214 95,205",
+  "Z",
+].join(" ");
 
-const fallbackBoundaryGuides = [
+const districtBoundaryGuides = [
   "M98,210 C175,185 240,150 310,112",
   "M305,112 C310,188 300,255 285,325 C270,395 240,462 198,544 C170,598 162,674 158,760",
   "M424,125 C386,178 356,235 345,306 C334,376 344,445 377,519 C400,574 374,655 303,740",
@@ -43,390 +205,319 @@ const fallbackBoundaryGuides = [
   "M133,371 C212,358 281,356 345,306 C407,256 478,215 615,202",
 ];
 
-const districts = [
-  { id: "quetta", name: "Quetta", lon: 66.99, lat: 30.18, x: 421, y: 276, pop: 2269, density: 890, ucPop: 410, adult: 1240, houses: 308, crops: 28, agriculture: 62, livestock: 318, facilities: 42, minerals: 38, water: 74, waterCompare: 82 },
-  { id: "pishin", name: "Pishin", lon: 67.0, lat: 30.58, x: 426, y: 230, pop: 835, density: 240, ucPop: 172, adult: 441, houses: 111, crops: 46, agriculture: 71, livestock: 690, facilities: 21, minerals: 24, water: 63, waterCompare: 68 },
-  { id: "chaman", name: "Chaman", lon: 66.45, lat: 30.92, x: 382, y: 210, pop: 466, density: 218, ucPop: 92, adult: 235, houses: 62, crops: 26, agriculture: 44, livestock: 410, facilities: 12, minerals: 18, water: 43, waterCompare: 49 },
-  { id: "zhob", name: "Zhob", lon: 69.45, lat: 31.34, x: 555, y: 205, pop: 612, density: 82, ucPop: 126, adult: 307, houses: 81, crops: 32, agriculture: 49, livestock: 741, facilities: 18, minerals: 29, water: 51, waterCompare: 57 },
-  { id: "loralai", name: "Loralai", lon: 68.58, lat: 30.37, x: 510, y: 270, pop: 498, density: 106, ucPop: 98, adult: 258, houses: 69, crops: 58, agriculture: 76, livestock: 581, facilities: 19, minerals: 35, water: 59, waterCompare: 66 },
-  { id: "sibi", name: "Sibi", lon: 67.88, lat: 29.54, x: 505, y: 382, pop: 315, density: 68, ucPop: 73, adult: 165, houses: 44, crops: 54, agriculture: 69, livestock: 347, facilities: 14, minerals: 31, water: 49, waterCompare: 52 },
-  { id: "kacchi", name: "Kachhi", lon: 67.5, lat: 29.05, x: 478, y: 452, pop: 383, density: 54, ucPop: 82, adult: 199, houses: 52, crops: 64, agriculture: 73, livestock: 421, facilities: 13, minerals: 27, water: 57, waterCompare: 61 },
-  { id: "jafarabad", name: "Jafarabad", lon: 68.25, lat: 28.27, x: 562, y: 492, pop: 625, density: 298, ucPop: 144, adult: 316, houses: 90, crops: 77, agriculture: 84, livestock: 506, facilities: 16, minerals: 11, water: 68, waterCompare: 74 },
-  { id: "nasirabad", name: "Nasirabad", lon: 68.04, lat: 28.42, x: 526, y: 500, pop: 563, density: 244, ucPop: 128, adult: 289, houses: 82, crops: 74, agriculture: 81, livestock: 472, facilities: 17, minerals: 13, water: 66, waterCompare: 70 },
-  { id: "khuzdar", name: "Khuzdar", lon: 66.61, lat: 27.8, x: 372, y: 505, pop: 997, density: 74, ucPop: 206, adult: 508, houses: 136, crops: 48, agriculture: 67, livestock: 899, facilities: 23, minerals: 76, water: 58, waterCompare: 63 },
-  { id: "kalat", name: "Kalat", lon: 66.59, lat: 29.03, x: 360, y: 375, pop: 480, density: 52, ucPop: 94, adult: 246, houses: 65, crops: 42, agriculture: 59, livestock: 544, facilities: 17, minerals: 71, water: 47, waterCompare: 53 },
-  { id: "mastung", name: "Mastung", lon: 66.84, lat: 29.8, x: 386, y: 326, pop: 313, density: 80, ucPop: 72, adult: 161, houses: 43, crops: 44, agriculture: 61, livestock: 338, facilities: 12, minerals: 46, water: 52, waterCompare: 55 },
-  { id: "chagai", name: "Chagai", lon: 64.1, lat: 29.7, x: 170, y: 238, pop: 281, density: 10, ucPop: 59, adult: 148, houses: 39, crops: 15, agriculture: 35, livestock: 264, facilities: 8, minerals: 92, water: 38, waterCompare: 42 },
-  { id: "nushki", name: "Nushki", lon: 66.02, lat: 29.55, x: 276, y: 292, pop: 206, density: 18, ucPop: 44, adult: 109, houses: 29, crops: 20, agriculture: 43, livestock: 224, facilities: 9, minerals: 54, water: 41, waterCompare: 45 },
-  { id: "kharan", name: "Kharan", lon: 65.42, lat: 28.58, x: 230, y: 398, pop: 237, density: 12, ucPop: 49, adult: 125, houses: 33, crops: 17, agriculture: 39, livestock: 251, facilities: 8, minerals: 68, water: 35, waterCompare: 39 },
-  { id: "washuk", name: "Washuk", lon: 64.4, lat: 27.7, x: 175, y: 512, pop: 176, density: 8, ucPop: 37, adult: 92, houses: 25, crops: 12, agriculture: 31, livestock: 214, facilities: 7, minerals: 63, water: 33, waterCompare: 37 },
-  { id: "panjgur", name: "Panjgur", lon: 64.09, lat: 26.97, x: 218, y: 604, pop: 414, density: 27, ucPop: 91, adult: 215, houses: 56, crops: 35, agriculture: 57, livestock: 377, facilities: 11, minerals: 51, water: 45, waterCompare: 50 },
-  { id: "kech", name: "Kech", lon: 63.05, lat: 26.0, x: 292, y: 690, pop: 907, density: 52, ucPop: 188, adult: 468, houses: 124, crops: 43, agriculture: 64, livestock: 502, facilities: 20, minerals: 33, water: 56, waterCompare: 60 },
-  { id: "gwadar", name: "Gwadar", lon: 62.32, lat: 25.13, x: 160, y: 724, pop: 262, density: 36, ucPop: 57, adult: 139, houses: 36, crops: 11, agriculture: 29, livestock: 92, facilities: 10, minerals: 18, water: 48, waterCompare: 54 },
-  { id: "lasbela", name: "Lasbela", lon: 66.7, lat: 26.23, x: 425, y: 646, pop: 406, density: 29, ucPop: 87, adult: 210, houses: 55, crops: 39, agriculture: 55, livestock: 318, facilities: 16, minerals: 57, water: 53, waterCompare: 59 },
-  { id: "hub", name: "Hub", lon: 67.1, lat: 25.03, x: 470, y: 712, pop: 394, density: 138, ucPop: 84, adult: 212, houses: 59, crops: 23, agriculture: 41, livestock: 190, facilities: 14, minerals: 49, water: 61, waterCompare: 65 },
-];
-
-const metricConfig = {
-  provincePop: { label: "Cities Population (Province)", icon: "users", suffix: "K", key: "pop" },
-  districtPop: { label: "Cities Population (District)", icon: "map", suffix: "K", key: "pop" },
-  density: { label: "Population Density", icon: "activity", suffix: "/km²", key: "density" },
-  ucPop: { label: "UC Population", icon: "layers", suffix: "K", key: "ucPop" },
-  adult: { label: "Adult Population", icon: "users", suffix: "K", key: "adult" },
-  housing: { label: "Housing Map", icon: "home", suffix: "K", key: "houses" },
-  ucHouses: { label: "UC Houses", icon: "home", suffix: "K", key: "houses" },
-  crop: { label: "Crop Maps", icon: "wheat", suffix: "%", key: "crops" },
-  agriculture: { label: "Agriculture Data", icon: "wheat", suffix: "%", key: "agriculture" },
-  livestock: { label: "Livestock Total", icon: "paw", suffix: "K", key: "livestock" },
-  facilities: { label: "Livestock Facilities", icon: "home", suffix: "", key: "facilities" },
-  mineral: { label: "Mineral Map", icon: "mountain", suffix: "%", key: "minerals" },
-  water: { label: "Water Schemes (District)", icon: "water", suffix: "%", key: "water" },
-  waterCompare: { label: "Water Comparison", icon: "water", suffix: "%", key: "waterCompare" },
+const districtGeoCenters = {
+  chagai: [64.1, 29.7],
+  nushki: [66.02, 29.55],
+  kharan: [65.42, 28.58],
+  washuk: [64.4, 27.7],
+  panjgur: [64.09, 26.97],
+  kech: [63.05, 26.0],
+  gwadar: [62.32, 25.13],
+  lasbela: [66.7, 26.23],
+  hub: [67.1, 25.03],
+  khuzdar: [66.61, 27.8],
+  kalat: [66.59, 29.03],
+  mastung: [66.84, 29.8],
+  quetta: [66.99, 30.18],
+  pishin: [67.0, 30.58],
+  chaman: [66.45, 30.92],
+  zhob: [69.45, 31.34],
+  loralai: [68.58, 30.37],
+  sibi: [67.88, 29.54],
+  kacchi: [67.5, 29.05],
+  nasirabad: [68.04, 28.42],
+  jafarabad: [68.25, 28.27],
 };
 
-const aliases = {
-  balochistan: "balochistan",
-  baluchistan: "balochistan",
-  quetta: "quetta",
-  pishin: "pishin",
-  killaabdullah: "chaman",
-  qillaabdullah: "chaman",
-  chaman: "chaman",
-  zhob: "zhob",
-  sherani: "zhob",
-  killasaifullah: "zhob",
-  qillasaifullah: "zhob",
-  loralai: "loralai",
-  barkhan: "loralai",
-  kohlu: "loralai",
-  dukki: "loralai",
-  musakhel: "loralai",
-  sibi: "sibi",
-  harnai: "sibi",
-  ziarat: "sibi",
-  derabugti: "sibi",
-  kacchi: "kacchi",
-  bolan: "kacchi",
-  jafarabad: "jafarabad",
-  jaffarabad: "jafarabad",
-  sohbatpur: "jafarabad",
-  ustamuhammad: "jafarabad",
-  ustamohammad: "jafarabad",
-  nasirabad: "nasirabad",
-  naseerabad: "nasirabad",
-  khuzdar: "khuzdar",
-  awaran: "khuzdar",
-  kalat: "kalat",
-  surab: "kalat",
-  mastung: "mastung",
-  chagai: "chagai",
-  nushki: "nushki",
-  kharan: "kharan",
-  washuk: "washuk",
-  panjgur: "panjgur",
-  kech: "kech",
-  turbat: "kech",
-  gwadar: "gwadar",
-  lasbela: "lasbela",
-  hub: "hub",
+const mapBounds = {
+  west: 60.7,
+  south: 24.65,
+  east: 70.55,
+  north: 32.2,
 };
 
-function normalizeName(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/district/g, "")
-    .replace(/[^a-z0-9]+/g, "")
-    .trim();
+const actualMapEmbedUrl = "https://www.openstreetmap.org/export/embed.html?bbox=60.7%2C24.65%2C70.55%2C32.2&layer=mapnik";
+
+function mercatorY(lat) {
+  const rad = (lat * Math.PI) / 180;
+  return Math.log(Math.tan(Math.PI / 4 + rad / 2));
 }
 
-function Icon({ type, size = 20, className = "" }) {
-  const commonProps = {
-    width: size,
-    height: size,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 2,
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    className,
-    "aria-hidden": true,
-  };
-  const iconType = type || "map";
-  return (
-    <svg {...commonProps}>
-      {iconType === "users" && <g><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /></g>}
-      {iconType === "map" && <g><path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3z" /><path d="M9 3v15" /><path d="M15 6v15" /></g>}
-      {iconType === "home" && <g><path d="M3 10.5 12 3l9 7.5" /><path d="M5 10v10h14V10" /><path d="M9 20v-6h6v6" /></g>}
-      {iconType === "water" && <g><path d="M7 16.5A4.5 4.5 0 0 0 11.5 12C11.5 9 7 3 7 3S2.5 9 2.5 12A4.5 4.5 0 0 0 7 16.5z" /><path d="M17.5 21a4 4 0 0 0 4-4c0-2.7-4-8-4-8s-4 5.3-4 8a4 4 0 0 0 4 4z" /></g>}
-      {iconType === "wheat" && <g><path d="M12 2v20" /><path d="M8 6c-2 0-3-2-3-2s1 4 4 4" /><path d="M16 6c2 0 3-2 3-2s-1 4-4 4" /></g>}
-      {iconType === "mountain" && <path d="m3 20 7-14 4 8 2-4 5 10H3z" />}
-      {iconType === "paw" && <g><circle cx="6" cy="7" r="2" /><circle cx="18" cy="7" r="2" /><circle cx="9" cy="4" r="2" /><circle cx="15" cy="4" r="2" /><path d="M8 15c0-2.2 1.8-4 4-4s4 1.8 4 4c0 2-1.6 3-4 3s-4-1-4-3z" /></g>}
-      {iconType === "activity" && <path d="M3 12h4l3-8 4 16 3-8h4" />}
-      {iconType === "layers" && <g><path d="m12 2 9 5-9 5-9-5 9-5z" /><path d="m3 12 9 5 9-5" /></g>}
-    </svg>
-  );
+function districtPoint(district) {
+  const center = districtGeoCenters[district.id];
+  if (!center) return [350, 410];
+
+  const lon = center[0];
+  const lat = center[1];
+  const x = ((lon - mapBounds.west) / (mapBounds.east - mapBounds.west)) * MAP.width;
+  const northY = mercatorY(mapBounds.north);
+  const southY = mercatorY(mapBounds.south);
+  const y = ((northY - mercatorY(lat)) / (northY - southY)) * MAP.height;
+
+  return [x, y];
 }
 
-function formatNumber(value) {
+function number(value) {
   return new Intl.NumberFormat("en-US").format(value || 0);
-}
-
-function svgEscape(value) {
-  return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
-}
-
-function featureName(feature) {
-  const p = feature?.properties || {};
-  return p.NAME_3 || p.NAME_2 || p.DISTRICT || p.ADM3_EN || p.name || p.NAME || "Unknown";
-}
-
-function provinceName(feature) {
-  const p = feature?.properties || {};
-  return p.NAME_1 || p.PROVINCE || p.ADM1_EN || p.province || "";
-}
-
-function findDistrictData(name) {
-  const normalized = normalizeName(name);
-  const id = aliases[normalized] || normalized;
-  return districts.find((district) => district.id === id) || districts.find((district) => normalizeName(district.name) === normalized) || null;
-}
-
-function collectPoints(geometry, points = []) {
-  if (!geometry) return points;
-  function walk(node) {
-    if (!Array.isArray(node)) return;
-    if (typeof node[0] === "number" && typeof node[1] === "number") {
-      points.push([node[0], node[1]]);
-      return;
-    }
-    node.forEach(walk);
-  }
-  walk(geometry.coordinates || []);
-  return points;
-}
-
-function bboxFromFeatures(features) {
-  const points = features.flatMap((feature) => collectPoints(feature.geometry));
-  if (!points.length) return null;
-  return points.reduce(
-    (bbox, point) => ({
-      minLon: Math.min(bbox.minLon, point[0]),
-      minLat: Math.min(bbox.minLat, point[1]),
-      maxLon: Math.max(bbox.maxLon, point[0]),
-      maxLat: Math.max(bbox.maxLat, point[1]),
-    }),
-    { minLon: Infinity, minLat: Infinity, maxLon: -Infinity, maxLat: -Infinity }
-  );
-}
-
-function createProjector(bbox) {
-  const b = bbox || { minLon: 60.7, minLat: 24.6, maxLon: 70.6, maxLat: 32.2 };
-  const padding = 34;
-  const lonRange = Math.max(0.0001, b.maxLon - b.minLon);
-  const latRange = Math.max(0.0001, b.maxLat - b.minLat);
-  const scale = Math.min((MAP.width - padding * 2) / lonRange, (MAP.height - padding * 2) / latRange);
-  const offsetX = (MAP.width - lonRange * scale) / 2;
-  const offsetY = (MAP.height - latRange * scale) / 2;
-  return (coord) => [offsetX + (coord[0] - b.minLon) * scale, offsetY + (b.maxLat - coord[1]) * scale];
-}
-
-function ringToPath(ring, project) {
-  return ring.map((coord, index) => {
-    const [x, y] = project(coord);
-    return `${index === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
-  }).join(" ") + " Z";
-}
-
-function geometryToPath(geometry, project) {
-  if (!geometry) return "";
-  if (geometry.type === "Polygon") return geometry.coordinates.map((ring) => ringToPath(ring, project)).join(" ");
-  if (geometry.type === "MultiPolygon") return geometry.coordinates.flatMap((polygon) => polygon.map((ring) => ringToPath(ring, project))).join(" ");
-  return "";
-}
-
-function buildIllustratorSvg(paths = []) {
-  const selectedIds = ["quetta", "khuzdar", "kech"];
-  const maxPop = Math.max(1, ...districts.map((district) => district.pop));
-  const totalPop = districts.reduce((sum, district) => sum + district.pop, 0);
-  const totalHouses = districts.reduce((sum, district) => sum + district.houses, 0);
-  const totalLivestock = districts.reduce((sum, district) => sum + district.livestock, 0);
-  const avgWater = Math.round(districts.reduce((sum, district) => sum + district.water, 0) / districts.length);
-  const metricButtons = Object.values(metricConfig).map((metric, index) => {
-    const y = 270 + index * 39;
-    const active = index === 0;
-    return `<g><rect x="55" y="${y}" width="285" height="34" rx="14" fill="${active ? "#2f3438" : "#eef0f2"}" stroke="${active ? "#b14ca3" : "#ffffff"}" opacity="${active ? "1" : ".58"}"/><circle cx="77" cy="${y + 17}" r="6" fill="${active ? "#62d6ce" : "#b14ca3"}"/><text x="94" y="${y + 22}" class="metricText" fill="${active ? "#ffffff" : "#2f3438"}">${svgEscape(metric.label)}</text></g>`;
-  }).join("\n");
-  const actualMap = paths.length
-    ? paths.map((item) => `<path d="${item.path}" fill="rgba(47,52,56,.84)" stroke="#ffffff" stroke-width="1"/>`).join("\n")
-    : `<path d="${fallbackProvincePath}" fill="url(#darkGrad)" stroke="#fff" stroke-width="3"/>`;
-  const markerLayer = districts.map((district) => {
-    const radius = 5 + (district.pop / maxPop) * 12;
-    const ring = selectedIds.includes(district.id) ? `<circle cx="${district.x}" cy="${district.y}" r="${(radius + 8).toFixed(1)}" fill="none" stroke="#62d6ce" stroke-width="2.5" stroke-dasharray="6 7"/>` : "";
-    return `<g id="district-${district.id}">${ring}<circle cx="${district.x}" cy="${district.y}" r="${radius.toFixed(1)}" fill="url(#bubble)" stroke="#ffffff" stroke-width="1.6"/><text x="${district.x}" y="${district.y - 8}" class="districtLabel">${svgEscape(district.name)}</text></g>`;
-  }).join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
-<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9dadd"/><stop offset="1" stop-color="#c2c4c8"/></linearGradient><linearGradient id="darkGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#464b50"/><stop offset=".55" stop-color="#2f3438"/><stop offset="1" stop-color="#181b1f"/></linearGradient><radialGradient id="bubble" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#ecade7"/><stop offset="1" stop-color="#b14ca3" stop-opacity=".78"/></radialGradient><style>text{font-family:Arial,Helvetica,sans-serif}.metricText{font-size:11px;font-weight:700}.districtLabel{font-size:8px;font-weight:800;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:rgba(47,52,56,.75);stroke-width:2px}.kpiTitle{font-size:10px;font-weight:800;fill:#6b7178}.kpiValue{font-size:30px;font-weight:900;fill:#2f3438}</style></defs>
-<rect width="1600" height="900" fill="url(#bg)"/><rect x="25" y="25" width="1550" height="850" rx="40" fill="#cfd1d5" stroke="#ffffff" stroke-width="1.5"/>
-<g id="left-sidebar"><rect x="55" y="60" width="285" height="180" rx="30" fill="#2f3438"/><text x="85" y="105" font-size="11" font-weight="900" fill="#fff" opacity=".52">PRESENTATION DASHBOARD</text><text x="85" y="145" font-size="36" font-weight="900" fill="#fff">Balochistan</text><text x="85" y="182" font-size="36" font-weight="900" fill="#fff">Data Atlas</text><text x="85" y="215" font-size="13" fill="#fff" opacity=".72">Updated actual province map + district boundaries</text>${metricButtons}</g>
-<g id="kpis"><rect x="365" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="383" y="95" class="kpiTitle">PROVINCE POPULATION</text><text x="383" y="140" class="kpiValue">${formatNumber(totalPop)} K</text><rect x="570" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="588" y="95" class="kpiTitle">UC HOUSES</text><text x="588" y="140" class="kpiValue">${formatNumber(totalHouses)} K</text><rect x="775" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="793" y="95" class="kpiTitle">LIVESTOCK TOTAL</text><text x="793" y="140" class="kpiValue">${formatNumber(totalLivestock)} K</text><rect x="980" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="998" y="95" class="kpiTitle">AVG WATER SCHEMES</text><text x="998" y="140" class="kpiValue">${avgWater} %</text></g>
-<g id="map-panel"><rect x="365" y="190" width="780" height="490" rx="30" fill="#d8dadd" opacity=".75" stroke="#fff"/><text x="395" y="230" font-size="14" font-weight="900" fill="#2f3438">BALOCHISTAN ACTUAL DISTRICT BOUNDARIES</text><g transform="translate(395,245) scale(.66)">${actualMap}${markerLayer}</g></g>
-<g id="right-panel"><rect x="1170" y="60" width="365" height="160" rx="28" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="1195" y="95" class="kpiTitle">ACTIVE LAYER</text><text x="1195" y="135" font-size="30" font-weight="900" fill="#2f3438">Cities Population</text><text x="1195" y="165" font-size="30" font-weight="900" fill="#2f3438">Province / District</text><text x="1195" y="198" font-size="13" fill="#6b7178">Static SVG export for Adobe Illustrator editing.</text><rect x="1170" y="410" width="365" height="435" rx="28" fill="#2f3438" opacity=".98" stroke="#fff"/><text x="1195" y="445" font-size="10" font-weight="900" fill="#fff" opacity=".45">DISTRICT DETAILS</text><text x="1195" y="475" font-size="24" font-weight="900" fill="#fff">3 selected</text></g>
-</svg>`;
-}
-
-function downloadIllustratorSvg(paths = []) {
-  const blob = new Blob([buildIllustratorSvg(paths)], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "balochistan-dashboard-illustrator.svg";
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
 }
 
 function validateDashboardData() {
   const metricKeys = Object.values(metricConfig).map((metric) => metric.key);
+  const districtIds = districts.map((district) => district.id);
+  const missingMetricData = metricKeys.filter((key) => districts.some((district) => typeof district[key] !== "number"));
+  const allPointsFinite = districts.every((district) => districtPoint(district).every((value) => Number.isFinite(value)));
+
   return {
+    paletteOk: Boolean(palette.bg && palette.ink && palette.muted && palette.accent && palette.accent2),
     districtCountOk: districts.length >= 20,
     metricCountOk: Object.keys(metricConfig).length === 14,
-    noMissingMetricData: metricKeys.every((key) => districts.every((district) => typeof district[key] === "number")),
-    noDuplicateDistrictIds: new Set(districts.map((district) => district.id)).size === districts.length,
-    mapPathOk: fallbackProvincePath.length > 200,
-    geoHelpersOk: typeof geometryToPath === "function" && typeof bboxFromFeatures === "function",
-    svgBuilderOk: typeof buildIllustratorSvg === "function" && buildIllustratorSvg().includes("</svg>"),
+    metricsHaveIcons: Object.values(metricConfig).every((metric) => typeof metric.icon === "function"),
+    noMissingMetricData: missingMetricData.length === 0,
+    noDuplicateDistrictIds: new Set(districtIds).size === districtIds.length,
+    outlineLooksValid: typeof provincePath === "string" && provincePath.length > 200,
+    boundaryGuidesOk: districtBoundaryGuides.length >= 8,
+    districtPointsOk: allPointsFinite,
   };
 }
 
 const dashboardSelfTests = validateDashboardData();
 if (typeof console !== "undefined") {
+  console.assert(dashboardSelfTests.paletteOk, "Palette should define all required colors.");
   console.assert(dashboardSelfTests.districtCountOk, "Expected at least 20 district records.");
   console.assert(dashboardSelfTests.metricCountOk, "Expected 14 dashboard metric layers.");
+  console.assert(dashboardSelfTests.metricsHaveIcons, "Every metric should use a local inline SVG icon.");
   console.assert(dashboardSelfTests.noMissingMetricData, "Every district must contain numeric values for every metric key.");
   console.assert(dashboardSelfTests.noDuplicateDistrictIds, "District IDs must be unique.");
-  console.assert(dashboardSelfTests.mapPathOk, "Fallback province path must be valid.");
-  console.assert(dashboardSelfTests.geoHelpersOk, "GeoJSON helper functions must exist.");
-  console.assert(dashboardSelfTests.svgBuilderOk, "SVG download builder must return a complete SVG.");
+  console.assert(dashboardSelfTests.outlineLooksValid, "Province outline should be a valid SVG path string.");
+  console.assert(dashboardSelfTests.boundaryGuidesOk, "Expected internal boundary guide paths.");
+  console.assert(dashboardSelfTests.districtPointsOk, "District marker points must be finite SVG coordinates.");
 }
 
 function MetricButton({ id, active, onClick }) {
   const config = metricConfig[id];
+  const Icon = config.icon;
+
   return (
-    <motion.button type="button" whileHover={{ y: -3, scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => onClick(id)} className={`group relative overflow-hidden rounded-2xl border px-3 py-2 text-left transition-all ${active ? "border-[#b14ca3] bg-[#2f3438] text-white shadow-xl" : "border-white/40 bg-white/35 text-[#2f3438] hover:bg-white/55"}`}>
+    <motion.button
+      type="button"
+      whileHover={{ y: -3, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={() => onClick(id)}
+      className={`group relative overflow-hidden rounded-2xl border px-3 py-2 text-left transition-all ${
+        active
+          ? "border-[#b14ca3] bg-[#2f3438] text-white shadow-xl"
+          : "border-white/40 bg-white/35 text-[#2f3438] hover:bg-white/55"
+      }`}
+    >
+      <div className="absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" style={{ background: "radial-gradient(circle at top left, rgba(177,76,163,.35), transparent 55%)" }} />
       <div className="relative flex items-center gap-2">
-        <Icon type={config.icon} size={16} className={active ? "text-[#62d6ce]" : "text-[#b14ca3]"} />
+        <Icon size={16} className={active ? "text-[#62d6ce]" : "text-[#b14ca3]"} />
         <span className="text-[11px] font-semibold tracking-wide">{config.label}</span>
       </div>
     </motion.button>
   );
 }
 
-function KpiCard({ title, value, suffix, icon, delay = 0 }) {
+function KpiCard({ title, value, suffix, icon: Icon, delay = 0 }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }} className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/35 p-4 shadow-[0_18px_40px_rgba(0,0,0,.08)] backdrop-blur">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+      className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/35 p-4 shadow-[0_18px_40px_rgba(0,0,0,.08)] backdrop-blur"
+    >
+      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-[#b14ca3]/15 blur-xl" />
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#6b7178]">{title}</p>
-          <p className="mt-2 text-3xl font-black tracking-tight text-[#2f3438]">{formatNumber(value)}<span className="text-sm font-bold text-[#b14ca3]"> {suffix}</span></p>
+          <p className="mt-2 text-3xl font-black tracking-tight text-[#2f3438]">
+            {number(value)}
+            <span className="text-sm font-bold text-[#b14ca3]"> {suffix}</span>
+          </p>
         </div>
-        <div className="rounded-2xl bg-[#2f3438] p-2 text-[#62d6ce]"><Icon type={icon} size={20} /></div>
+        <div className="rounded-2xl bg-[#2f3438] p-2 text-[#62d6ce]">
+          <Icon size={20} />
+        </div>
       </div>
     </motion.div>
   );
 }
 
-function BalochistanMap({ selected, activeMetric, onToggle, hovered, setHovered, mapPaths, geoStatus, projectPoint }) {
+function BalochistanMap({ selected, activeMetric, onToggle, hovered, setHovered }) {
   const metric = metricConfig[activeMetric];
   const max = Math.max(1, ...districts.map((district) => district[metric.key]));
-  const hasActualMap = mapPaths.length > 0;
 
   return (
     <div className="relative h-full w-full overflow-hidden rounded-[2rem] border border-white/40 bg-[#d8dadd]/55 shadow-[0_28px_90px_rgba(0,0,0,.14)] backdrop-blur">
-      <div className="absolute left-6 top-6 z-30 rounded-3xl bg-white/80 px-4 py-3 shadow-lg backdrop-blur-md">
-        <div className="flex items-center gap-2 text-[#2f3438]"><Icon type="map" size={18} className="text-[#b14ca3]" /><span className="text-xs font-black uppercase tracking-[0.25em]">Updated Actual Balochistan Map</span></div>
-        <p className="mt-1 max-w-md text-xs text-[#6b7178]">{hasActualMap ? "Real GeoJSON district boundaries loaded." : "Loading actual GeoJSON boundaries; fallback outline shown if unavailable."}</p>
+      <div className="absolute left-6 top-6 z-30 rounded-3xl bg-white/70 px-4 py-3 shadow-lg backdrop-blur-md">
+        <div className="flex items-center gap-2 text-[#2f3438]">
+          <Icons.Sparkles size={18} className="text-[#b14ca3]" />
+          <span className="text-xs font-black uppercase tracking-[0.25em]">Balochistan Map</span>
+        </div>
+        <p className="mt-1 max-w-md text-xs text-[#6b7178]">Self-contained province map restored. Click districts to compare data.</p>
       </div>
 
       <svg viewBox={`0 0 ${MAP.width} ${MAP.height}`} className="absolute inset-0 z-20 h-full w-full" preserveAspectRatio="xMidYMid meet">
         <defs>
-          <filter id="mapShadow" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="24" stdDeviation="18" floodColor="#000" floodOpacity="0.24" /></filter>
-          <linearGradient id="mapGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#464b50" /><stop offset="0.55" stopColor="#2f3438" /><stop offset="1" stopColor="#181b1f" /></linearGradient>
-          <radialGradient id="mapGlow" cx="50%" cy="45%" r="60%"><stop offset="0" stopColor="rgba(98,214,206,.22)" /><stop offset="1" stopColor="rgba(177,76,163,0)" /></radialGradient>
-          <radialGradient id="bubble" cx="50%" cy="45%" r="55%"><stop offset="0" stopColor="rgba(236,173,231,.95)" /><stop offset="1" stopColor="rgba(177,76,163,.45)" /></radialGradient>
-          <clipPath id="balochistanClip"><path d={fallbackProvincePath} /></clipPath>
+          <filter id="mapShadow" x="-25%" y="-25%" width="150%" height="150%">
+            <feDropShadow dx="0" dy="24" stdDeviation="18" floodColor="#000" floodOpacity="0.24" />
+          </filter>
+          <linearGradient id="mapGradient" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#464b50" />
+            <stop offset="0.55" stopColor="#2f3438" />
+            <stop offset="1" stopColor="#181b1f" />
+          </linearGradient>
+          <radialGradient id="mapGlow" cx="50%" cy="45%" r="60%">
+            <stop offset="0" stopColor="rgba(98,214,206,.22)" />
+            <stop offset="1" stopColor="rgba(177,76,163,0)" />
+          </radialGradient>
+          <radialGradient id="bubble" cx="50%" cy="45%" r="55%">
+            <stop offset="0" stopColor="rgba(236,173,231,.95)" />
+            <stop offset="1" stopColor="rgba(177,76,163,.45)" />
+          </radialGradient>
+          <clipPath id="balochistanClip">
+            <path d={provincePath} />
+          </clipPath>
         </defs>
-        <rect width={MAP.width} height={MAP.height} fill="rgba(255,255,255,.08)" />
+
+        <rect x="0" y="0" width={MAP.width} height={MAP.height} fill="rgba(255,255,255,.08)" />
         <circle cx="350" cy="410" r="310" fill="url(#mapGlow)" />
 
-        {hasActualMap ? (
-          <g filter="url(#mapShadow)">
-            {mapPaths.map((item, index) => {
-              const isSelected = item.data ? selected.includes(item.data.id) : false;
-              const isHovered = hovered === item.id;
-              return (
-                <motion.path
-                  key={item.key}
-                  d={item.path}
-                  fill={isSelected ? "rgba(177,76,163,.58)" : isHovered ? "rgba(98,214,206,.34)" : "rgba(47,52,56,.84)"}
-                  stroke={isSelected || isHovered ? "#ffffff" : "rgba(255,255,255,.58)"}
-                  strokeWidth={isSelected || isHovered ? 2.2 : 1}
-                  vectorEffect="non-scaling-stroke"
-                  initial={{ opacity: 0, pathLength: 0 }}
-                  animate={{ opacity: 1, pathLength: 1 }}
-                  transition={{ duration: 0.55, delay: Math.min(index * 0.015, 0.35) }}
-                  onMouseEnter={() => setHovered(item.id)}
-                  onMouseLeave={() => setHovered(null)}
-                  onClick={() => item.data && onToggle(item.data.id)}
-                  style={{ cursor: item.data ? "pointer" : "default" }}
-                />
-              );
-            })}
-          </g>
-        ) : (
-          <g>
-            <motion.path d={fallbackProvincePath} fill="url(#mapGradient)" filter="url(#mapShadow)" initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ duration: 1.2 }} />
-            <path d={fallbackProvincePath} fill="none" stroke="rgba(255,255,255,.82)" strokeWidth="2.4" />
-            <g clipPath="url(#balochistanClip)">{fallbackBoundaryGuides.map((line, index) => <path key={line} d={line} fill="none" stroke="rgba(255,255,255,.35)" strokeWidth="1.45" strokeDasharray={index % 2 ? "7 7" : ""} />)}</g>
-          </g>
-        )}
+        <motion.path
+          d={provincePath}
+          fill="url(#mapGradient)"
+          filter="url(#mapShadow)"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 1.25, ease: "easeInOut" }}
+        />
+
+        <motion.path
+          d={provincePath}
+          fill="none"
+          stroke="rgba(255,255,255,.82)"
+          strokeWidth="2.4"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 1.6, delay: 0.15 }}
+        />
+
+        <g clipPath="url(#balochistanClip)">
+          {districtBoundaryGuides.map((line, index) => (
+            <motion.path
+              key={`guide-${index}`}
+              d={line}
+              fill="none"
+              stroke="rgba(255,255,255,.35)"
+              strokeWidth="1.45"
+              strokeDasharray={index % 2 ? "7 7" : ""}
+              initial={{ opacity: 0, pathLength: 0 }}
+              animate={{ opacity: 1, pathLength: 1 }}
+              transition={{ delay: 0.45 + index * 0.06, duration: 1 }}
+            />
+          ))}
+        </g>
 
         {selected.slice(0, 6).map((id, index) => {
           const district = districts.find((item) => item.id === id);
           if (!district) return null;
-          const point = hasActualMap ? projectPoint([district.lon, district.lat]) : [district.x, district.y];
-          return <motion.path key={`flow-${id}`} d={`M350 405 C${350 + index * 35} ${315 - index * 20}, ${point[0] - 45} ${point[1] - 55}, ${point[0]} ${point[1]}`} fill="none" stroke={index % 2 ? "#62d6ce" : "#b14ca3"} strokeWidth="3" strokeLinecap="round" strokeDasharray="10 12" animate={{ strokeDashoffset: [0, -80] }} transition={{ duration: 2.2, repeat: Infinity, ease: "linear" }} />;
+          const [x, y] = districtPoint(district);
+          return (
+            <motion.path
+              key={`flow-${id}`}
+              d={`M350 405 C${350 + index * 35} ${315 - index * 20}, ${x - 45} ${y - 55}, ${x} ${y}`}
+              fill="none"
+              stroke={index % 2 ? "#62d6ce" : "#b14ca3"}
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray="10 12"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.95, strokeDashoffset: [0, -80] }}
+              transition={{ pathLength: { duration: 1.1 }, strokeDashoffset: { duration: 2.2, repeat: Infinity, ease: "linear" } }}
+            />
+          );
         })}
 
         {districts.map((district, index) => {
-          const point = hasActualMap ? projectPoint([district.lon, district.lat]) : [district.x, district.y];
+          const [x, y] = districtPoint(district);
           const isSelected = selected.includes(district.id);
           const isHovered = hovered === district.id;
-          const radius = hasActualMap ? 5 + (district[metric.key] / max) * 10 : 12 + (district[metric.key] / max) * 28;
+          const radius = 12 + (district[metric.key] / max) * 28;
+
           return (
-            <g key={district.id} onMouseEnter={() => setHovered(district.id)} onMouseLeave={() => setHovered(null)} onClick={() => onToggle(district.id)} style={{ cursor: "pointer" }}>
-              {isSelected ? <motion.circle cx={point[0]} cy={point[1]} r={radius + 9} fill="none" stroke="#62d6ce" strokeWidth="2.5" strokeDasharray="6 7" animate={{ rotate: 360, scale: [1, 1.08, 1] }} transition={{ rotate: { duration: 6, repeat: Infinity, ease: "linear" }, scale: { duration: 1.8, repeat: Infinity } }} style={{ transformOrigin: `${point[0]}px ${point[1]}px` }} /> : null}
-              <motion.circle cx={point[0]} cy={point[1]} r={radius} fill="url(#bubble)" stroke={isSelected || isHovered ? "#fff" : "rgba(255,255,255,.7)"} strokeWidth={isSelected || isHovered ? 3 : 1.5} initial={{ scale: 0, opacity: 0 }} animate={{ scale: isHovered ? 1.14 : 1, opacity: 1 }} transition={{ delay: 0.25 + index * 0.025, type: "spring", stiffness: 180 }} />
-              <text x={point[0]} y={point[1] - 9} textAnchor="middle" fill="#fff" fontSize={hasActualMap ? "8.5" : "15"} fontWeight="900" style={{ paintOrder: "stroke", stroke: "rgba(47,52,56,.75)", strokeWidth: 2 }}>{hasActualMap ? district.name : district[metric.key]}</text>
-              {!hasActualMap ? <text x={point[0]} y={point[1] + 14} textAnchor="middle" fill="#fff" fontSize="8.5" fontWeight="800" style={{ paintOrder: "stroke", stroke: "rgba(47,52,56,.75)", strokeWidth: 2 }}>{district.name}</text> : null}
+            <g
+              key={district.id}
+              onMouseEnter={() => setHovered(district.id)}
+              onMouseLeave={() => setHovered(null)}
+              onClick={() => onToggle(district.id)}
+              style={{ cursor: "pointer" }}
+            >
+              {isSelected ? (
+                <motion.circle
+                  cx={x}
+                  cy={y}
+                  r={radius + 10}
+                  fill="none"
+                  stroke="#62d6ce"
+                  strokeWidth="2.5"
+                  strokeDasharray="6 7"
+                  animate={{ rotate: 360, scale: [1, 1.08, 1] }}
+                  transition={{ rotate: { duration: 6, repeat: Infinity, ease: "linear" }, scale: { duration: 1.8, repeat: Infinity } }}
+                  style={{ transformOrigin: `${x}px ${y}px` }}
+                />
+              ) : null}
+              <motion.circle
+                cx={x}
+                cy={y}
+                r={radius}
+                fill="url(#bubble)"
+                stroke={isSelected || isHovered ? "#ffffff" : "rgba(255,255,255,.7)"}
+                strokeWidth={isSelected || isHovered ? 3 : 1.5}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: isHovered ? 1.14 : 1, opacity: 1 }}
+                transition={{ delay: 0.45 + index * 0.025, type: "spring", stiffness: 180 }}
+              />
+              <motion.circle
+                cx={x}
+                cy={y}
+                r={radius + 5}
+                fill="none"
+                stroke="rgba(177,76,163,.45)"
+                strokeWidth="2"
+                animate={{ r: [radius, radius + 14, radius], opacity: [0.55, 0, 0.55] }}
+                transition={{ duration: 3, repeat: Infinity, delay: index * 0.08 }}
+              />
+              <text x={x} y={y - 2} textAnchor="middle" fill="#fff" fontSize="15" fontWeight="900" style={{ paintOrder: "stroke", stroke: "rgba(47,52,56,.55)", strokeWidth: 3 }}>
+                {district[metric.key]}
+              </text>
+              <text x={x} y={y + 14} textAnchor="middle" fill="#fff" fontSize="8.5" fontWeight="800" style={{ paintOrder: "stroke", stroke: "rgba(47,52,56,.65)", strokeWidth: 2 }}>
+                {district.name}
+              </text>
             </g>
           );
         })}
       </svg>
 
-      {geoStatus === "loading" ? <div className="absolute bottom-6 right-6 z-30 rounded-2xl bg-white/80 px-4 py-3 text-xs font-bold text-[#2f3438] shadow-lg backdrop-blur-md">Loading actual district boundaries…</div> : null}
-      {geoStatus === "fallback" ? <div className="absolute bottom-6 right-6 z-30 max-w-xs rounded-2xl bg-[#2f3438]/90 px-4 py-3 text-xs font-semibold text-white shadow-lg backdrop-blur-md">GeoJSON could not load. Upload local GeoJSON/Shapefile for guaranteed official boundaries.</div> : null}
-
       <AnimatePresence>
         {hovered ? (
-          <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute bottom-6 left-6 z-30 rounded-3xl bg-[#2f3438]/95 p-4 text-white shadow-2xl backdrop-blur">
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="absolute bottom-6 left-6 z-30 rounded-3xl bg-[#2f3438]/95 p-4 text-white shadow-2xl backdrop-blur"
+          >
             {(() => {
               const district = districts.find((item) => item.id === hovered);
-              const geoName = mapPaths.find((item) => item.id === hovered)?.name;
-              if (!district) return <div><p className="text-xs uppercase tracking-[0.25em] text-[#62d6ce]">District boundary</p><h3 className="text-2xl font-black">{geoName || hovered}</h3><p className="mt-1 text-sm text-white/70">Boundary loaded from GeoJSON.</p></div>;
-              return <div><p className="text-xs uppercase tracking-[0.25em] text-[#62d6ce]">District preview</p><h3 className="text-2xl font-black">{district.name}</h3><p className="mt-1 text-sm text-white/70">{metric.label}: <b className="text-white">{formatNumber(district[metric.key])}{metric.suffix}</b></p></div>;
+              if (!district) return null;
+              return (
+                <>
+                  <p className="text-xs uppercase tracking-[0.25em] text-[#62d6ce]">District preview</p>
+                  <h3 className="text-2xl font-black">{district.name}</h3>
+                  <p className="mt-1 text-sm text-white/70">
+                    {metric.label}: <b className="text-white">{number(district[metric.key])}{metric.suffix}</b>
+                  </p>
+                </>
+              );
             })()}
           </motion.div>
         ) : null}
@@ -437,11 +528,25 @@ function BalochistanMap({ selected, activeMetric, onToggle, hovered, setHovered,
 
 function Donut({ value, label }) {
   const safeValue = Math.max(0, Math.min(100, value));
-  const data = [{ name: "Value", value: safeValue }, { name: "Remaining", value: 100 - safeValue }];
+  const data = [
+    { name: "Value", value: safeValue },
+    { name: "Remaining", value: 100 - safeValue },
+  ];
+
   return (
     <div className="relative h-44 rounded-3xl border border-white/40 bg-white/30 p-3">
-      <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={data} dataKey="value" innerRadius="62%" outerRadius="86%" startAngle={90} endAngle={-270} paddingAngle={2}><Cell fill={palette.accent} /><Cell fill="rgba(47,52,56,.18)" /></Pie></PieChart></ResponsiveContainer>
-      <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-3xl font-black text-[#2f3438]">{safeValue}%</span><span className="max-w-[130px] text-center text-[10px] font-bold uppercase tracking-wider text-[#6b7178]">{label}</span></div>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie data={data} dataKey="value" innerRadius="62%" outerRadius="86%" startAngle={90} endAngle={-270} paddingAngle={2}>
+            <Cell fill={palette.accent} />
+            <Cell fill="rgba(47,52,56,.18)" />
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-black text-[#2f3438]">{safeValue}%</span>
+        <span className="max-w-[130px] text-center text-[10px] font-bold uppercase tracking-wider text-[#6b7178]">{label}</span>
+      </div>
     </div>
   );
 }
@@ -450,56 +555,6 @@ export default function BalochistanInfographicDashboard() {
   const [activeMetric, setActiveMetric] = useState("provincePop");
   const [selected, setSelected] = useState(["quetta", "khuzdar", "kech"]);
   const [hovered, setHovered] = useState(null);
-  const [geoFeatures, setGeoFeatures] = useState([]);
-  const [geoStatus, setGeoStatus] = useState("loading");
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadGeoJson() {
-      try {
-        setGeoStatus("loading");
-        const response = await fetch(GEOJSON_URL);
-        if (!response.ok) throw new Error(`GeoJSON request failed: ${response.status}`);
-        const geojson = await response.json();
-        const features = Array.isArray(geojson.features) ? geojson.features : [];
-        const balochistanFeatures = features.filter((feature) => {
-          const province = normalizeName(provinceName(feature));
-          return province === "balochistan" || province === "baluchistan";
-        });
-        if (!balochistanFeatures.length) throw new Error("No Balochistan features found.");
-        if (!cancelled) {
-          setGeoFeatures(balochistanFeatures);
-          setGeoStatus("loaded");
-        }
-      } catch (error) {
-        console.warn("GeoJSON loading failed; using local fallback map.", error);
-        if (!cancelled) {
-          setGeoFeatures([]);
-          setGeoStatus("fallback");
-        }
-      }
-    }
-    loadGeoJson();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const bbox = useMemo(() => bboxFromFeatures(geoFeatures), [geoFeatures]);
-  const projectPoint = useMemo(() => createProjector(bbox), [bbox]);
-  const mapPaths = useMemo(() => {
-    return geoFeatures.map((feature, index) => {
-      const name = featureName(feature);
-      const data = findDistrictData(name);
-      return {
-        key: `${name}-${index}`,
-        name,
-        id: data?.id || normalizeName(name),
-        data,
-        path: geometryToPath(feature.geometry, projectPoint),
-      };
-    });
-  }, [geoFeatures, projectPoint]);
 
   const metric = metricConfig[activeMetric];
   const selectedDistricts = useMemo(() => districts.filter((district) => selected.includes(district.id)), [selected]);
@@ -509,6 +564,7 @@ export default function BalochistanInfographicDashboard() {
   const totalLivestock = districts.reduce((sum, district) => sum + district.livestock, 0);
   const avgWater = Math.round(districts.reduce((sum, district) => sum + district.water, 0) / districts.length);
   const avgAgriculture = Math.round(districts.reduce((sum, district) => sum + district.agriculture, 0) / districts.length);
+  const ActiveMetricIcon = metric.icon;
 
   function toggleDistrict(id) {
     setSelected((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
@@ -520,32 +576,143 @@ export default function BalochistanInfographicDashboard() {
         <div className="grid h-full grid-cols-[310px_1fr_360px] gap-6">
           <aside className="flex min-h-0 flex-col gap-4">
             <motion.div initial={{ opacity: 0, x: -18 }} animate={{ opacity: 1, x: 0 }} className="rounded-[2rem] bg-[#2f3438] p-5 text-white shadow-2xl">
-              <div className="mb-4 flex items-center gap-3"><div className="rounded-2xl bg-white/10 p-2 text-[#62d6ce]"><Icon type="map" /></div><div><p className="text-[10px] font-black uppercase tracking-[0.32em] text-white/50">Presentation Dashboard</p><h1 className="text-3xl font-black leading-none tracking-tight">Balochistan Data Atlas</h1></div></div>
-              <p className="text-sm leading-relaxed text-white/68">Updated actual Balochistan map with district boundary polygons and live data layers.</p>
+              <div className="mb-4 flex items-center gap-3">
+                <div className="rounded-2xl bg-white/10 p-2 text-[#62d6ce]">
+                  <Icons.MapPinned />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.32em] text-white/50">Presentation Dashboard</p>
+                  <h1 className="text-3xl font-black leading-none tracking-tight">Balochistan Data Atlas</h1>
+                </div>
+              </div>
+              <p className="text-sm leading-relaxed text-white/68">Interactive province dashboard for population, housing, crop, agriculture, livestock, minerals, and water schemes.</p>
             </motion.div>
-            <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-auto pr-1">{Object.keys(metricConfig).map((id) => <MetricButton key={id} id={id} active={activeMetric === id} onClick={setActiveMetric} />)}</div>
+
+            <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-auto pr-1">
+              {Object.keys(metricConfig).map((id) => (
+                <MetricButton key={id} id={id} active={activeMetric === id} onClick={setActiveMetric} />
+              ))}
+            </div>
           </aside>
 
           <main className="grid min-h-0 grid-rows-[132px_1fr_188px] gap-5">
             <section className="grid grid-cols-4 gap-4">
-              <KpiCard title="Province Population" value={totalPop} suffix="K" icon="users" delay={0.05} />
-              <KpiCard title="UC Houses" value={totalHouses} suffix="K" icon="home" delay={0.12} />
-              <KpiCard title="Livestock Total" value={totalLivestock} suffix="K" icon="paw" delay={0.18} />
-              <KpiCard title="Avg Water Schemes" value={avgWater} suffix="%" icon="water" delay={0.24} />
+              <KpiCard title="Province Population" value={totalPop} suffix="K" icon={Icons.Users} delay={0.05} />
+              <KpiCard title="UC Houses" value={totalHouses} suffix="K" icon={Icons.Home} delay={0.12} />
+              <KpiCard title="Livestock Total" value={totalLivestock} suffix="K" icon={Icons.PawPrint} delay={0.18} />
+              <KpiCard title="Avg Water Schemes" value={avgWater} suffix="%" icon={Icons.Droplets} delay={0.24} />
             </section>
-            <BalochistanMap selected={selected} activeMetric={activeMetric} onToggle={toggleDistrict} hovered={hovered} setHovered={setHovered} mapPaths={mapPaths} geoStatus={geoStatus} projectPoint={projectPoint} />
+
+            <BalochistanMap selected={selected} activeMetric={activeMetric} onToggle={toggleDistrict} hovered={hovered} setHovered={setHovered} />
+
             <section className="grid grid-cols-3 gap-4">
-              <div className="rounded-3xl border border-white/40 bg-white/35 p-4 shadow-lg backdrop-blur"><p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Selected district comparison</p><ResponsiveContainer width="100%" height="82%"><BarChart data={chartData}><XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} /><YAxis hide /><Tooltip /><Bar dataKey={metric.key} radius={[8, 8, 0, 0]} fill={palette.accent} /></BarChart></ResponsiveContainer></div>
-              <div className="rounded-3xl border border-white/40 bg-white/35 p-4 shadow-lg backdrop-blur"><p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Water comparison trend</p><ResponsiveContainer width="100%" height="82%"><AreaChart data={chartData}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(47,52,56,.15)" /><XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} /><YAxis hide /><Tooltip /><Area type="monotone" dataKey="water" stroke={palette.accent} fill="rgba(177,76,163,.35)" strokeWidth={3} /><Area type="monotone" dataKey="waterCompare" stroke={palette.accent2} fill="rgba(98,214,206,.25)" strokeWidth={3} /></AreaChart></ResponsiveContainer></div>
-              <div className="rounded-3xl border border-white/40 bg-white/35 p-4 shadow-lg backdrop-blur"><p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Agriculture and crop profile</p><ResponsiveContainer width="100%" height="82%"><LineChart data={chartData}><XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} /><YAxis hide /><Tooltip /><Line type="monotone" dataKey="agriculture" stroke={palette.accent} strokeWidth={3} dot={{ r: 4 }} /><Line type="monotone" dataKey="crops" stroke={palette.accent2} strokeWidth={3} dot={{ r: 4 }} /></LineChart></ResponsiveContainer></div>
+              <div className="rounded-3xl border border-white/40 bg-white/35 p-4 shadow-lg backdrop-blur">
+                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Selected district comparison</p>
+                <ResponsiveContainer width="100%" height="82%">
+                  <BarChart data={chartData}>
+                    <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} />
+                    <YAxis hide />
+                    <Tooltip />
+                    <Bar dataKey={metric.key} radius={[8, 8, 0, 0]} fill={palette.accent} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="rounded-3xl border border-white/40 bg-white/35 p-4 shadow-lg backdrop-blur">
+                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Water comparison trend</p>
+                <ResponsiveContainer width="100%" height="82%">
+                  <AreaChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(47,52,56,.15)" />
+                    <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} />
+                    <YAxis hide />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="water" stroke={palette.accent} fill="rgba(177,76,163,.35)" strokeWidth={3} />
+                    <Area type="monotone" dataKey="waterCompare" stroke={palette.accent2} fill="rgba(98,214,206,.25)" strokeWidth={3} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="rounded-3xl border border-white/40 bg-white/35 p-4 shadow-lg backdrop-blur">
+                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Agriculture and crop profile</p>
+                <ResponsiveContainer width="100%" height="82%">
+                  <LineChart data={chartData}>
+                    <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} />
+                    <YAxis hide />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="agriculture" stroke={palette.accent} strokeWidth={3} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="crops" stroke={palette.accent2} strokeWidth={3} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </section>
           </main>
 
           <aside className="flex min-h-0 flex-col gap-5">
             <div className="rounded-[2rem] border border-white/40 bg-white/35 p-5 shadow-lg backdrop-blur">
-              <div className="flex items-center justify-between gap-4"><div><p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Active Layer</p><h2 className="mt-1 text-2xl font-black leading-tight">{metric.label}</h2></div><div className="rounded-3xl bg-[#2f3438] p-3 text-[#62d6ce]"><Icon type={metric.icon} size={28} /></div></div>
-              <p className="mt-4 text-sm leading-relaxed text-[#6b7178]">Download an Illustrator-ready SVG. When GeoJSON loads, it exports the actual Balochistan district boundaries.</p>
-              <button type="button" onClick={() => downloadIllustratorSvg(mapPaths)} className="mt-4 w-full rounded-2xl bg-[#2f3438] px-4 py-3 text-sm font-black text-white shadow-lg transition hover:scale-[1.01] hover:bg-[#b14ca3]">Download Dashboard SVG</button>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Active Layer</p>
+                  <h2 className="mt-1 text-2xl font-black leading-tight">{metric.label}</h2>
+                </div>
+                <div className="rounded-3xl bg-[#2f3438] p-3 text-[#62d6ce]">
+                  <ActiveMetricIcon size={28} />
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-[#6b7178]">The external map iframe was removed so the map remains visible offline. The dashboard now uses a self-contained SVG Balochistan map with local district marker coordinates.</p>
             </div>
-            <div className="grid grid-cols-2 gap-4"><Donut value={avgWater} label="Water scheme coverage" /><Donut value={avgAgriculture} label="Agriculture score" /></div>
-            <div className="min-h-0 flex-1 overflow-hidden round
+
+            <div className="grid grid-cols-2 gap-4">
+              <Donut value={avgWater} label="Water scheme coverage" />
+              <Donut value={avgAgriculture} label="Agriculture score" />
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-hidden rounded-[2rem] border border-white/40 bg-[#2f3438] p-5 text-white shadow-2xl">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-white/45">District details</p>
+                  <h3 className="text-xl font-black">{selected.length} selected</h3>
+                </div>
+                <button type="button" onClick={() => setSelected([])} className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-white/70 hover:bg-white/20">
+                  Clear
+                </button>
+              </div>
+
+              <div className="h-[calc(100%-64px)] space-y-3 overflow-auto pr-1">
+                {(selectedDistricts.length ? selectedDistricts : districts.slice(0, 5)).map((district, index) => (
+                  <motion.div
+                    key={district.id}
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.04 }}
+                    onMouseEnter={() => setHovered(district.id)}
+                    onMouseLeave={() => setHovered(null)}
+                    className="rounded-2xl border border-white/10 bg-white/7 p-3 hover:bg-white/12"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="font-black">{district.name}</p>
+                        <p className="text-xs text-white/55">Population {number(district.pop)}K · Houses {number(district.houses)}K</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-black text-[#62d6ce]">{number(district[metric.key])}</p>
+                        <p className="text-[10px] text-white/45">{metric.suffix || "score"}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+                      <motion.div
+                        className="h-full rounded-full bg-[#b14ca3]"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(100, (district[metric.key] / Math.max(1, ...districts.map((item) => item[metric.key]))) * 100)}%` }}
+                        transition={{ duration: 0.8 }}
+                      />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
+}
