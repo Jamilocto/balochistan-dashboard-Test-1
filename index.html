@@ -1,718 +1,100 @@
-import React, { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from "recharts";
-
-const palette = {
-  bg: "#cfd1d5",
-  ink: "#2f3438",
-  muted: "#6b7178",
-  accent: "#b14ca3",
-  accent2: "#62d6ce",
-};
-
-function IconBase({ children, size = 20, className = "" }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      {children}
-    </svg>
-  );
-}
-
-const Icons = {
-  MapPinned: (props) => (
-    <IconBase {...props}>
-      <path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3z" />
-      <path d="M9 3v15" />
-      <path d="M15 6v15" />
-      <circle cx="12" cy="10.5" r="2.5" />
-    </IconBase>
-  ),
-  Users: (props) => (
-    <IconBase {...props}>
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </IconBase>
-  ),
-  Home: (props) => (
-    <IconBase {...props}>
-      <path d="M3 10.5 12 3l9 7.5" />
-      <path d="M5 10v10h14V10" />
-      <path d="M9 20v-6h6v6" />
-    </IconBase>
-  ),
-  Wheat: (props) => (
-    <IconBase {...props}>
-      <path d="M12 2v20" />
-      <path d="M8 6c-2 0-3-2-3-2s1 4 4 4" />
-      <path d="M16 6c2 0 3-2 3-2s-1 4-4 4" />
-      <path d="M8 12c-2 0-3-2-3-2s1 4 4 4" />
-      <path d="M16 12c2 0 3-2 3-2s-1 4-4 4" />
-    </IconBase>
-  ),
-  Droplets: (props) => (
-    <IconBase {...props}>
-      <path d="M7 16.5A4.5 4.5 0 0 0 11.5 12C11.5 9 7 3 7 3S2.5 9 2.5 12A4.5 4.5 0 0 0 7 16.5z" />
-      <path d="M17.5 21a4 4 0 0 0 4-4c0-2.7-4-8-4-8s-4 5.3-4 8a4 4 0 0 0 4 4z" />
-    </IconBase>
-  ),
-  Mountain: (props) => (
-    <IconBase {...props}>
-      <path d="m3 20 7-14 4 8 2-4 5 10H3z" />
-    </IconBase>
-  ),
-  PawPrint: (props) => (
-    <IconBase {...props}>
-      <circle cx="6" cy="7" r="2" />
-      <circle cx="18" cy="7" r="2" />
-      <circle cx="9" cy="4" r="2" />
-      <circle cx="15" cy="4" r="2" />
-      <path d="M8 15c0-2.2 1.8-4 4-4s4 1.8 4 4c0 2-1.6 3-4 3s-4-1-4-3z" />
-    </IconBase>
-  ),
-  Building2: (props) => (
-    <IconBase {...props}>
-      <path d="M6 22V3h12v19" />
-      <path d="M4 22h16" />
-      <path d="M9 7h1" />
-      <path d="M14 7h1" />
-      <path d="M9 11h1" />
-      <path d="M14 11h1" />
-    </IconBase>
-  ),
-  Layers: (props) => (
-    <IconBase {...props}>
-      <path d="m12 2 9 5-9 5-9-5 9-5z" />
-      <path d="m3 12 9 5 9-5" />
-      <path d="m3 17 9 5 9-5" />
-    </IconBase>
-  ),
-  Activity: (props) => (
-    <IconBase {...props}>
-      <path d="M3 12h4l3-8 4 16 3-8h4" />
-    </IconBase>
-  ),
-  Sparkles: (props) => (
-    <IconBase {...props}>
-      <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" />
-      <path d="M5 3v4" />
-      <path d="M3 5h4" />
-      <path d="M19 17v4" />
-      <path d="M17 19h4" />
-    </IconBase>
-  ),
-};
-
-const districts = [
-  { id: "quetta", name: "Quetta", pop: 2269, density: 890, ucPop: 410, adult: 1240, houses: 308, crops: 28, agriculture: 62, livestock: 318, facilities: 42, minerals: 38, water: 74, waterCompare: 82 },
-  { id: "pishin", name: "Pishin", pop: 835, density: 240, ucPop: 172, adult: 441, houses: 111, crops: 46, agriculture: 71, livestock: 690, facilities: 21, minerals: 24, water: 63, waterCompare: 68 },
-  { id: "chaman", name: "Chaman", pop: 466, density: 218, ucPop: 92, adult: 235, houses: 62, crops: 26, agriculture: 44, livestock: 410, facilities: 12, minerals: 18, water: 43, waterCompare: 49 },
-  { id: "zhob", name: "Zhob", pop: 612, density: 82, ucPop: 126, adult: 307, houses: 81, crops: 32, agriculture: 49, livestock: 741, facilities: 18, minerals: 29, water: 51, waterCompare: 57 },
-  { id: "loralai", name: "Loralai", pop: 498, density: 106, ucPop: 98, adult: 258, houses: 69, crops: 58, agriculture: 76, livestock: 581, facilities: 19, minerals: 35, water: 59, waterCompare: 66 },
-  { id: "sibi", name: "Sibi", pop: 315, density: 68, ucPop: 73, adult: 165, houses: 44, crops: 54, agriculture: 69, livestock: 347, facilities: 14, minerals: 31, water: 49, waterCompare: 52 },
-  { id: "kacchi", name: "Kachhi", pop: 383, density: 54, ucPop: 82, adult: 199, houses: 52, crops: 64, agriculture: 73, livestock: 421, facilities: 13, minerals: 27, water: 57, waterCompare: 61 },
-  { id: "jafarabad", name: "Jafarabad", pop: 625, density: 298, ucPop: 144, adult: 316, houses: 90, crops: 77, agriculture: 84, livestock: 506, facilities: 16, minerals: 11, water: 68, waterCompare: 74 },
-  { id: "nasirabad", name: "Nasirabad", pop: 563, density: 244, ucPop: 128, adult: 289, houses: 82, crops: 74, agriculture: 81, livestock: 472, facilities: 17, minerals: 13, water: 66, waterCompare: 70 },
-  { id: "khuzdar", name: "Khuzdar", pop: 997, density: 74, ucPop: 206, adult: 508, houses: 136, crops: 48, agriculture: 67, livestock: 899, facilities: 23, minerals: 76, water: 58, waterCompare: 63 },
-  { id: "kalat", name: "Kalat", pop: 480, density: 52, ucPop: 94, adult: 246, houses: 65, crops: 42, agriculture: 59, livestock: 544, facilities: 17, minerals: 71, water: 47, waterCompare: 53 },
-  { id: "mastung", name: "Mastung", pop: 313, density: 80, ucPop: 72, adult: 161, houses: 43, crops: 44, agriculture: 61, livestock: 338, facilities: 12, minerals: 46, water: 52, waterCompare: 55 },
-  { id: "chagai", name: "Chagai", pop: 281, density: 10, ucPop: 59, adult: 148, houses: 39, crops: 15, agriculture: 35, livestock: 264, facilities: 8, minerals: 92, water: 38, waterCompare: 42 },
-  { id: "nushki", name: "Nushki", pop: 206, density: 18, ucPop: 44, adult: 109, houses: 29, crops: 20, agriculture: 43, livestock: 224, facilities: 9, minerals: 54, water: 41, waterCompare: 45 },
-  { id: "kharan", name: "Kharan", pop: 237, density: 12, ucPop: 49, adult: 125, houses: 33, crops: 17, agriculture: 39, livestock: 251, facilities: 8, minerals: 68, water: 35, waterCompare: 39 },
-  { id: "washuk", name: "Washuk", pop: 176, density: 8, ucPop: 37, adult: 92, houses: 25, crops: 12, agriculture: 31, livestock: 214, facilities: 7, minerals: 63, water: 33, waterCompare: 37 },
-  { id: "panjgur", name: "Panjgur", pop: 414, density: 27, ucPop: 91, adult: 215, houses: 56, crops: 35, agriculture: 57, livestock: 377, facilities: 11, minerals: 51, water: 45, waterCompare: 50 },
-  { id: "kech", name: "Kech", pop: 907, density: 52, ucPop: 188, adult: 468, houses: 124, crops: 43, agriculture: 64, livestock: 502, facilities: 20, minerals: 33, water: 56, waterCompare: 60 },
-  { id: "gwadar", name: "Gwadar", pop: 262, density: 36, ucPop: 57, adult: 139, houses: 36, crops: 11, agriculture: 29, livestock: 92, facilities: 10, minerals: 18, water: 48, waterCompare: 54 },
-  { id: "lasbela", name: "Lasbela", pop: 406, density: 29, ucPop: 87, adult: 210, houses: 55, crops: 39, agriculture: 55, livestock: 318, facilities: 16, minerals: 57, water: 53, waterCompare: 59 },
-  { id: "hub", name: "Hub", pop: 394, density: 138, ucPop: 84, adult: 212, houses: 59, crops: 23, agriculture: 41, livestock: 190, facilities: 14, minerals: 49, water: 61, waterCompare: 65 },
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Balochistan Interactive Infographic Dashboard</title>
+<style>
+:root{--bg:#cfd1d5;--ink:#2f3438;--muted:#6b7178;--accent:#b14ca3;--accent2:#62d6ce}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink);overflow:hidden}
+.page{min-height:100vh;padding:20px}.dashboard{width:min(1600px,100%);aspect-ratio:16/9;max-height:96vh;margin:auto;border:1px solid #fff8;border-radius:40px;padding:28px;background:#cfd1d5;box-shadow:0 35px 100px #0004;overflow:hidden}
+.grid{height:100%;display:grid;grid-template-columns:310px 1fr 360px;gap:24px}.left,.right{min-height:0;display:flex;flex-direction:column;gap:16px}.main{display:grid;grid-template-rows:132px 1fr 188px;gap:20px;min-height:0}
+.hero{background:var(--ink);color:white;border-radius:32px;padding:22px;box-shadow:0 20px 45px #0003}.hero small,.eyebrow{display:block;font-size:10px;font-weight:900;letter-spacing:.28em;opacity:.55;text-transform:uppercase}.hero h1{font-size:36px;line-height:.95;margin:12px 0;font-weight:900}.hero p{font-size:14px;line-height:1.5;opacity:.72;margin:0}
+.metric-list{display:grid;gap:8px;overflow:auto;padding-right:4px}.metric{border:1px solid #fff7;background:#ffffff60;color:var(--ink);border-radius:16px;padding:10px 12px;font-size:11px;font-weight:700;text-align:left;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:8px}.metric:hover{transform:translateY(-2px);background:#ffffff88}.metric.active{background:var(--ink);color:white;border-color:var(--accent);box-shadow:0 12px 25px #0002}.dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}.metric.active .dot{background:var(--accent2)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{position:relative;border:1px solid #fff7;background:#ffffff55;border-radius:26px;padding:18px;box-shadow:0 18px 40px #0001;backdrop-filter:blur(12px);overflow:hidden}.kpi-title{font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}.kpi-value{font-size:30px;font-weight:900;margin-top:10px}.kpi-value span{font-size:14px;color:var(--accent)}
+.map-card{position:relative;border:1px solid #fff7;background:#d8dadd88;border-radius:32px;overflow:hidden;box-shadow:0 28px 90px #0002}.map-head{position:absolute;left:24px;top:24px;z-index:5;background:#ffffffe0;border-radius:24px;padding:14px 16px;box-shadow:0 12px 25px #0002}.map-head h2{font-size:12px;letter-spacing:.22em;text-transform:uppercase;margin:0 0 5px;font-weight:900}.map-head p{font-size:12px;color:var(--muted);margin:0;max-width:440px}
+svg{display:block;width:100%;height:100%}.district{cursor:pointer}.district:hover{filter:brightness(1.18)}.label{fill:white;font-size:8.5px;font-weight:800;text-anchor:middle;paint-order:stroke;stroke:#2f3438bf;stroke-width:2px;pointer-events:none}.value{fill:white;font-size:14px;font-weight:900;text-anchor:middle;paint-order:stroke;stroke:#2f343888;stroke-width:3px;pointer-events:none}
+.bottom-charts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.chart-title{font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}.bar-row{display:flex;align-items:end;height:88px;gap:26px;padding:0 20px}.bar{width:32px;border-radius:8px 8px 0 0;background:var(--accent)}.mini-chart svg{height:90px}
+.right-card{border:1px solid #fff7;background:#ffffff55;border-radius:32px;padding:20px;box-shadow:0 18px 40px #0001}.right-card h3{font-size:28px;line-height:1.05;margin:8px 0;font-weight:900}.download-btn{width:100%;margin-top:16px;border:0;border-radius:18px;background:var(--ink);color:white;padding:13px 16px;font-weight:900;cursor:pointer;box-shadow:0 12px 24px #0003}.download-btn:hover{background:var(--accent)}
+.donuts{display:grid;grid-template-columns:1fr 1fr;gap:16px}.donut{height:176px;position:relative}.donut .center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}.donut strong{font-size:30px}.donut span{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--muted);text-align:center;max-width:120px}
+.details{flex:1;min-height:0;border:1px solid #fff7;background:var(--ink);border-radius:32px;padding:20px;color:white;overflow:hidden;box-shadow:0 20px 50px #0003}.details-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.details h3{margin:4px 0 0;font-size:22px}.clear{border:0;border-radius:999px;background:#ffffff1a;color:#fffb;padding:6px 12px;font-weight:800;cursor:pointer}.detail-list{height:calc(100% - 58px);overflow:auto;display:grid;gap:10px;padding-right:4px}.detail-item{background:#ffffff14;border:1px solid #ffffff1a;border-radius:18px;padding:12px}.detail-row{display:flex;justify-content:space-between;gap:12px;align-items:center}.detail-item p{margin:0}.detail-item small{opacity:.55}.progress{height:6px;background:#ffffff1a;border-radius:999px;overflow:hidden;margin-top:10px}.progress div{height:100%;background:var(--accent)}
+.tooltip{position:absolute;left:24px;bottom:24px;z-index:6;background:#2f3438f6;color:white;border-radius:24px;padding:16px;box-shadow:0 16px 35px #0004;display:none}.tooltip small{font-size:11px;color:var(--accent2);letter-spacing:.22em;text-transform:uppercase;font-weight:900}.tooltip h3{margin:6px 0 4px;font-size:24px}.status{position:absolute;right:24px;bottom:24px;z-index:6;background:#ffffffe0;color:var(--ink);border-radius:18px;padding:12px 16px;font-size:12px;font-weight:800;box-shadow:0 12px 24px #0002}@keyframes dash{to{stroke-dashoffset:-80}}.flow{animation:dash 2.2s linear infinite}
+</style>
+</head>
+<body>
+<div class="page"><div class="dashboard"><div class="grid">
+<aside class="left"><div class="hero"><small>Presentation Dashboard</small><h1>Balochistan<br>Data Atlas</h1><p>Updated actual Balochistan map with district boundary polygons and live data layers.</p></div><div id="metricList" class="metric-list"></div></aside>
+<main class="main"><section class="kpis" id="kpis"></section><section class="map-card"><div class="map-head"><h2>Updated Actual Balochistan Map</h2><p id="mapStatusText">Loading actual GeoJSON boundaries; fallback outline shown if unavailable.</p></div><div id="mapContainer"></div><div id="mapStatus" class="status">Loading actual district boundaries...</div><div id="tooltip" class="tooltip"></div></section><section class="bottom-charts"><div class="card mini-chart"><div class="chart-title">Selected district comparison</div><div id="barChart"></div></div><div class="card mini-chart"><div class="chart-title">Water comparison trend</div><svg viewBox="0 0 240 90"><polyline points="10,74 65,42 120,55 180,36 230,26" fill="none" stroke="#b14ca3" stroke-width="4"/><polyline points="10,80 65,52 120,65 180,45 230,34" fill="none" stroke="#62d6ce" stroke-width="4"/></svg></div><div class="card mini-chart"><div class="chart-title">Agriculture and crop profile</div><svg viewBox="0 0 240 90"><polyline points="10,76 65,45 120,60 180,30 230,40" fill="none" stroke="#b14ca3" stroke-width="4"/><polyline points="10,82 65,62 120,70 180,50 230,55" fill="none" stroke="#62d6ce" stroke-width="4"/></svg></div></section></main>
+<aside class="right"><div class="right-card"><span class="eyebrow">Active Layer</span><h3 id="activeLayerTitle">Cities Population (Province)</h3><p style="color:var(--muted);line-height:1.45;margin:0">Download an Illustrator-ready SVG. When GeoJSON loads, it exports the actual Balochistan district boundaries.</p><button class="download-btn" onclick="downloadIllustratorSvg()">Download Dashboard SVG</button></div><div class="donuts"><div class="card donut" id="waterDonut"></div><div class="card donut" id="agriDonut"></div></div><div class="details"><div class="details-head"><div><span class="eyebrow">District details</span><h3 id="selectedCount">3 selected</h3></div><button class="clear" onclick="clearSelected()">Clear</button></div><div id="detailList" class="detail-list"></div></div></aside>
+</div></div></div>
+<script>
+const palette={bg:"#cfd1d5",ink:"#2f3438",muted:"#6b7178",accent:"#b14ca3",accent2:"#62d6ce"};
+const MAP={width:900,height:560};
+const GEOJSON_URL="https://services1.arcgis.com/RTK5Unh1Z71JKIiR/arcgis/rest/services/District_My/FeatureServer/0/query?where=ADM1_EN%3D%27Balochistan%27&outFields=ADM2_EN,ADM1_EN,Poplation,Area_sqkm,pop_densit&returnGeometry=true&outSR=4326&f=geojson";
+const fallbackProvincePath="M95,205 C130,158 196,122 270,110 C328,100 377,123 424,125 C482,128 552,151 615,202 C653,233 660,270 626,301 C596,329 562,334 558,374 C553,424 608,454 586,505 C566,553 512,566 488,613 C462,665 505,704 463,743 C421,782 359,736 303,740 C248,744 212,793 158,760 C114,733 117,667 86,625 C52,579 28,536 55,486 C80,440 127,419 133,371 C139,321 95,298 78,254 C68,229 76,214 95,205 Z";
+const fallbackBoundaryGuides=["M98,210 C175,185 240,150 310,112","M305,112 C310,188 300,255 285,325 C270,395 240,462 198,544 C170,598 162,674 158,760","M424,125 C386,178 356,235 345,306 C334,376 344,445 377,519 C400,574 374,655 303,740","M615,202 C550,224 496,247 452,285 C421,312 388,345 345,306","M558,374 C505,390 456,420 423,467 C388,519 424,579 488,613","M55,486 C122,485 178,510 198,544 C230,604 284,633 377,519","M86,625 C150,625 225,641 303,740","M463,743 C445,690 438,633 488,613","M133,371 C212,358 281,356 345,306 C407,256 478,215 615,202"];
+const districts=[
+{id:"quetta",name:"Quetta",lon:66.99,lat:30.18,x:421,y:276,pop:2269,density:890,ucPop:410,adult:1240,houses:308,crops:28,agriculture:62,livestock:318,facilities:42,minerals:38,water:74,waterCompare:82},
+{id:"pishin",name:"Pishin",lon:67,lat:30.58,x:426,y:230,pop:835,density:240,ucPop:172,adult:441,houses:111,crops:46,agriculture:71,livestock:690,facilities:21,minerals:24,water:63,waterCompare:68},
+{id:"chaman",name:"Chaman",lon:66.45,lat:30.92,x:382,y:210,pop:466,density:218,ucPop:92,adult:235,houses:62,crops:26,agriculture:44,livestock:410,facilities:12,minerals:18,water:43,waterCompare:49},
+{id:"zhob",name:"Zhob",lon:69.45,lat:31.34,x:555,y:205,pop:612,density:82,ucPop:126,adult:307,houses:81,crops:32,agriculture:49,livestock:741,facilities:18,minerals:29,water:51,waterCompare:57},
+{id:"loralai",name:"Loralai",lon:68.58,lat:30.37,x:510,y:270,pop:498,density:106,ucPop:98,adult:258,houses:69,crops:58,agriculture:76,livestock:581,facilities:19,minerals:35,water:59,waterCompare:66},
+{id:"sibi",name:"Sibi",lon:67.88,lat:29.54,x:505,y:382,pop:315,density:68,ucPop:73,adult:165,houses:44,crops:54,agriculture:69,livestock:347,facilities:14,minerals:31,water:49,waterCompare:52},
+{id:"kacchi",name:"Kachhi",lon:67.5,lat:29.05,x:478,y:452,pop:383,density:54,ucPop:82,adult:199,houses:52,crops:64,agriculture:73,livestock:421,facilities:13,minerals:27,water:57,waterCompare:61},
+{id:"jafarabad",name:"Jafarabad",lon:68.25,lat:28.27,x:562,y:492,pop:625,density:298,ucPop:144,adult:316,houses:90,crops:77,agriculture:84,livestock:506,facilities:16,minerals:11,water:68,waterCompare:74},
+{id:"nasirabad",name:"Nasirabad",lon:68.04,lat:28.42,x:526,y:500,pop:563,density:244,ucPop:128,adult:289,houses:82,crops:74,agriculture:81,livestock:472,facilities:17,minerals:13,water:66,waterCompare:70},
+{id:"khuzdar",name:"Khuzdar",lon:66.61,lat:27.8,x:372,y:505,pop:997,density:74,ucPop:206,adult:508,houses:136,crops:48,agriculture:67,livestock:899,facilities:23,minerals:76,water:58,waterCompare:63},
+{id:"kalat",name:"Kalat",lon:66.59,lat:29.03,x:360,y:375,pop:480,density:52,ucPop:94,adult:246,houses:65,crops:42,agriculture:59,livestock:544,facilities:17,minerals:71,water:47,waterCompare:53},
+{id:"mastung",name:"Mastung",lon:66.84,lat:29.8,x:386,y:326,pop:313,density:80,ucPop:72,adult:161,houses:43,crops:44,agriculture:61,livestock:338,facilities:12,minerals:46,water:52,waterCompare:55},
+{id:"chagai",name:"Chagai",lon:64.1,lat:29.7,x:170,y:238,pop:281,density:10,ucPop:59,adult:148,houses:39,crops:15,agriculture:35,livestock:264,facilities:8,minerals:92,water:38,waterCompare:42},
+{id:"nushki",name:"Nushki",lon:66.02,lat:29.55,x:276,y:292,pop:206,density:18,ucPop:44,adult:109,houses:29,crops:20,agriculture:43,livestock:224,facilities:9,minerals:54,water:41,waterCompare:45},
+{id:"kharan",name:"Kharan",lon:65.42,lat:28.58,x:230,y:398,pop:237,density:12,ucPop:49,adult:125,houses:33,crops:17,agriculture:39,livestock:251,facilities:8,minerals:68,water:35,waterCompare:39},
+{id:"washuk",name:"Washuk",lon:64.4,lat:27.7,x:175,y:512,pop:176,density:8,ucPop:37,adult:92,houses:25,crops:12,agriculture:31,livestock:214,facilities:7,minerals:63,water:33,waterCompare:37},
+{id:"panjgur",name:"Panjgur",lon:64.09,lat:26.97,x:218,y:604,pop:414,density:27,ucPop:91,adult:215,houses:56,crops:35,agriculture:57,livestock:377,facilities:11,minerals:51,water:45,waterCompare:50},
+{id:"kech",name:"Kech",lon:63.05,lat:26,x:292,y:690,pop:907,density:52,ucPop:188,adult:468,houses:124,crops:43,agriculture:64,livestock:502,facilities:20,minerals:33,water:56,waterCompare:60},
+{id:"gwadar",name:"Gwadar",lon:62.32,lat:25.13,x:160,y:724,pop:262,density:36,ucPop:57,adult:139,houses:36,crops:11,agriculture:29,livestock:92,facilities:10,minerals:18,water:48,waterCompare:54},
+{id:"lasbela",name:"Lasbela",lon:66.7,lat:26.23,x:425,y:646,pop:406,density:29,ucPop:87,adult:210,houses:55,crops:39,agriculture:55,livestock:318,facilities:16,minerals:57,water:53,waterCompare:59},
+{id:"hub",name:"Hub",lon:67.1,lat:25.03,x:470,y:712,pop:394,density:138,ucPop:84,adult:212,houses:59,crops:23,agriculture:41,livestock:190,facilities:14,minerals:49,water:61,waterCompare:65}
 ];
+const metricConfig={provincePop:{label:"Cities Population (Province)",suffix:"K",key:"pop"},districtPop:{label:"Cities Population (District)",suffix:"K",key:"pop"},density:{label:"Population Density",suffix:"/km2",key:"density"},ucPop:{label:"UC Population",suffix:"K",key:"ucPop"},adult:{label:"Adult Population",suffix:"K",key:"adult"},housing:{label:"Housing Map",suffix:"K",key:"houses"},ucHouses:{label:"UC Houses",suffix:"K",key:"houses"},crop:{label:"Crop Maps",suffix:"%",key:"crops"},agriculture:{label:"Agriculture Data",suffix:"%",key:"agriculture"},livestock:{label:"Livestock Total",suffix:"K",key:"livestock"},facilities:{label:"Livestock Facilities",suffix:"",key:"facilities"},mineral:{label:"Mineral Map",suffix:"%",key:"minerals"},water:{label:"Water Schemes (District)",suffix:"%",key:"water"},waterCompare:{label:"Water Comparison",suffix:"%",key:"waterCompare"}};
+const aliases={balochistan:"balochistan",baluchistan:"balochistan",jaffarabad:"jafarabad",jafarabad:"jafarabad",naseerabad:"nasirabad",nasirabad:"nasirabad",qillaabdullah:"killaabdullah",killaabdullah:"killaabdullah",qillasaifullah:"killasaifullah",killasaifullah:"killasaifullah",dukki:"duki",duki:"duki"};
+let activeMetric="provincePop",selected=new Set(["quetta","khuzdar","kech"]),hovered=null,geoStatus="loading",projectPoint=createProjector(null),mapPaths=[];
+function normalizeName(v){return String(v||"").toLowerCase().replace(/district/g,"").replace(/[^a-z0-9]+/g,"").trim()}
+function formatNumber(v){return new Intl.NumberFormat("en-US").format(v||0)}
+function escapeXml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function featureName(f){const p=f?.properties||{};return p.ADM2_EN||p.NAME_2||p.NAME_3||p.DISTRICT||p.ADM3_EN||p.name||p.NAME||"Unknown"}
+function provinceName(f){const p=f?.properties||{};return p.ADM1_EN||p.NAME_1||p.PROVINCE||p.province||""}
+function findDistrictData(name){const n=normalizeName(name),id=aliases[n]||n;return districts.find(d=>d.id===id)||districts.find(d=>normalizeName(d.name)===n)||null}
+function collectPoints(g,pts=[]){if(!g)return pts;function walk(n){if(!Array.isArray(n))return;if(typeof n[0]==="number"&&typeof n[1]==="number"){pts.push([n[0],n[1]]);return}n.forEach(walk)}walk(g.coordinates||[]);return pts}
+function geometryCenter(g){const pts=collectPoints(g,[]);if(!pts.length)return [66.5,28.6];const b=pts.reduce((a,p)=>({minLon:Math.min(a.minLon,p[0]),minLat:Math.min(a.minLat,p[1]),maxLon:Math.max(a.maxLon,p[0]),maxLat:Math.max(a.maxLat,p[1])}),{minLon:Infinity,minLat:Infinity,maxLon:-Infinity,maxLat:-Infinity});return [(b.minLon+b.maxLon)/2,(b.minLat+b.maxLat)/2]}
+function addMissingDistrictRecords(features){features.forEach(f=>{const name=featureName(f),id=aliases[normalizeName(name)]||normalizeName(name);if(findDistrictData(name))return;const p=f.properties||{},pop=Math.round((Number(p.Poplation)||0)/1000),density=Math.round(Number(p.pop_densit)||0),[lon,lat]=geometryCenter(f.geometry);districts.push({id,name,lon,lat,x:0,y:0,pop:pop||100,density,ucPop:Math.round((pop||100)*.2),adult:Math.round((pop||100)*.52),houses:Math.round((pop||100)/7),crops:35,agriculture:45,livestock:Math.round((pop||100)*.7),facilities:10,minerals:35,water:45,waterCompare:50})})}
+function bboxFromFeatures(features){const pts=features.flatMap(f=>collectPoints(f.geometry));if(!pts.length)return null;return pts.reduce((b,p)=>({minLon:Math.min(b.minLon,p[0]),minLat:Math.min(b.minLat,p[1]),maxLon:Math.max(b.maxLon,p[0]),maxLat:Math.max(b.maxLat,p[1])}),{minLon:Infinity,minLat:Infinity,maxLon:-Infinity,maxLat:-Infinity})}
+function createProjector(bbox){const b=bbox||{minLon:60.7,minLat:24.6,maxLon:70.6,maxLat:32.2},pad=34,lonR=Math.max(.0001,b.maxLon-b.minLon),latR=Math.max(.0001,b.maxLat-b.minLat),scale=Math.min((MAP.width-pad*2)/lonR,(MAP.height-pad*2)/latR),offX=(MAP.width-lonR*scale)/2,offY=(MAP.height-latR*scale)/2;return c=>[offX+(c[0]-b.minLon)*scale,offY+(b.maxLat-c[1])*scale]}
+function ringToPath(r,proj){return r.map((c,i)=>{const [x,y]=proj(c);return `${i===0?"M":"L"}${x.toFixed(2)},${y.toFixed(2)}`}).join(" ")+" Z"}
+function geometryToPath(g,proj){if(!g)return "";if(g.type==="Polygon")return g.coordinates.map(r=>ringToPath(r,proj)).join(" ");if(g.type==="MultiPolygon")return g.coordinates.flatMap(poly=>poly.map(r=>ringToPath(r,proj))).join(" ");return ""}
+function renderMetrics(){metricList.innerHTML=Object.entries(metricConfig).map(([id,m])=>`<button class="metric ${activeMetric===id?"active":""}" onclick="setMetric('${id}')"><span class="dot"></span>${m.label}</button>`).join("");activeLayerTitle.textContent=metricConfig[activeMetric].label}
+function setMetric(id){activeMetric=id;renderAll()}
+function toggleDistrict(id){selected.has(id)?selected.delete(id):selected.add(id);renderAll()}
+function clearSelected(){selected.clear();renderAll()}
+function total(k){return districts.reduce((s,d)=>s+d[k],0)}
+function avg(k){return Math.round(total(k)/districts.length)}
+function renderKpis(){kpis.innerHTML=[["Province Population",total("pop"),"K"],["UC Houses",total("houses"),"K"],["Livestock Total",total("livestock"),"K"],["Avg Water Schemes",avg("water"),"%"]].map(([t,v,s])=>`<div class="card"><div class="kpi-title">${t}</div><div class="kpi-value">${formatNumber(v)} <span>${s}</span></div></div>`).join("")}
+function districtPoint(d){return mapPaths.length?projectPoint([d.lon,d.lat]):[d.x,d.y]}
+function renderMap(){const metric=metricConfig[activeMetric],max=Math.max(1,...districts.map(d=>d[metric.key])),hasActual=mapPaths.length>0;mapStatusText.textContent=hasActual?"Real GeoJSON district boundaries loaded.":"Loading actual GeoJSON boundaries; fallback outline shown if unavailable.";mapStatus.style.display=geoStatus==="loaded"?"none":"block";mapStatus.textContent=geoStatus==="loading"?"Loading actual district boundaries...":"GeoJSON could not load. Fallback map is shown.";const boundaryLayer=hasActual?`<g filter="url(#shadow)">${mapPaths.map(item=>{const sel=item.data&&selected.has(item.data.id),hov=hovered===item.id;return `<path class="district" d="${item.path}" fill="${sel?"rgba(177,76,163,.58)":hov?"rgba(98,214,206,.34)":"rgba(47,52,56,.84)"}" stroke="${sel||hov?"#fff":"rgba(255,255,255,.58)"}" stroke-width="${sel||hov?2.2:1}" onclick="${item.data?`toggleDistrict('${item.data.id}')`:''}" onmouseenter="setHover('${item.id}')" onmouseleave="setHover(null)" vector-effect="non-scaling-stroke"></path>`}).join("")}</g>`:`<g filter="url(#shadow)"><path d="${fallbackProvincePath}" fill="url(#mapGradient)" stroke="#fff" stroke-width="2.4"></path><g clip-path="url(#clip)">${fallbackBoundaryGuides.map((g,i)=>`<path d="${g}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.45" stroke-dasharray="${i%2?"7 7":""}"></path>`).join("")}</g></g>`;const flows=[...selected].slice(0,6).map((id,i)=>{const d=districts.find(x=>x.id===id);if(!d)return "";const [x,y]=districtPoint(d);return `<path class="flow" d="M450 300 C${450+i*35} ${235-i*20}, ${x-45} ${y-55}, ${x} ${y}" fill="none" stroke="${i%2?palette.accent2:palette.accent}" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 12"></path>`}).join("");const markers=districts.map(d=>{const [x,y]=districtPoint(d),sel=selected.has(d.id),hov=hovered===d.id,r=hasActual?5+(d[metric.key]/max)*10:12+(d[metric.key]/max)*28;return `<g class="district" onclick="toggleDistrict('${d.id}')" onmouseenter="setHover('${d.id}')" onmouseleave="setHover(null)">${sel?`<circle cx="${x}" cy="${y}" r="${r+9}" fill="none" stroke="${palette.accent2}" stroke-width="2.5" stroke-dasharray="6 7"></circle>`:""}<circle cx="${x}" cy="${y}" r="${r}" fill="url(#bubble)" stroke="${sel||hov?"#fff":"rgba(255,255,255,.7)"}" stroke-width="${sel||hov?3:1.5}"></circle><text x="${x}" y="${hasActual?y-9:y-2}" class="${hasActual?"label":"value"}">${hasActual?escapeXml(d.name):d[metric.key]}</text>${hasActual?"":`<text x="${x}" y="${y+14}" class="label">${escapeXml(d.name)}</text>`}</g>`}).join("");mapContainer.innerHTML=`<svg viewBox="0 0 ${MAP.width} ${MAP.height}" preserveAspectRatio="xMidYMid meet"><defs><filter id="shadow" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="24" stdDeviation="18" flood-color="#000" flood-opacity=".24"/></filter><linearGradient id="mapGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#464b50"/><stop offset=".55" stop-color="#2f3438"/><stop offset="1" stop-color="#181b1f"/></linearGradient><radialGradient id="mapGlow" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="rgba(98,214,206,.22)"/><stop offset="1" stop-color="rgba(177,76,163,0)"/></radialGradient><radialGradient id="bubble" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="rgba(236,173,231,.95)"/><stop offset="1" stop-color="rgba(177,76,163,.45)"/></radialGradient><clipPath id="clip"><path d="${fallbackProvincePath}"/></clipPath></defs><rect width="${MAP.width}" height="${MAP.height}" fill="rgba(255,255,255,.08)"></rect><circle cx="450" cy="300" r="310" fill="url(#mapGlow)"></circle>${boundaryLayer}${flows}${markers}</svg>`}
+function setHover(id){hovered=id;renderTooltip()}
+function renderTooltip(){if(!hovered){tooltip.style.display="none";return}const d=districts.find(x=>x.id===hovered),geo=mapPaths.find(x=>x.id===hovered),metric=metricConfig[activeMetric];tooltip.style.display="block";tooltip.innerHTML=d?`<small>District preview</small><h3>${d.name}</h3><p>${metric.label}: <b>${formatNumber(d[metric.key])}${metric.suffix}</b></p>`:`<small>District boundary</small><h3>${geo?escapeXml(geo.name):escapeXml(hovered)}</h3><p>Boundary loaded from GeoJSON.</p>`}
+function renderCharts(){const metric=metricConfig[activeMetric],data=(selected.size?[...selected].map(id=>districts.find(d=>d.id===id)).filter(Boolean):districts.slice(0,6)),max=Math.max(1,...data.map(d=>d[metric.key]));barChart.innerHTML=`<div class="bar-row">${data.slice(0,5).map(d=>`<div style="text-align:center"><div class="bar" style="height:${80*d[metric.key]/max}px"></div><small>${d.name.slice(0,3).toUpperCase()}</small></div>`).join("")}</div>`}
+function donut(el,value,label){const r=52,c=2*Math.PI*r,dash=c*value/100;document.getElementById(el).innerHTML=`<svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="${r}" fill="none" stroke="rgba(47,52,56,.18)" stroke-width="18"/><circle cx="80" cy="80" r="${r}" fill="none" stroke="${palette.accent}" stroke-width="18" stroke-linecap="round" stroke-dasharray="${dash} ${c-dash}" transform="rotate(-90 80 80)"/></svg><div class="center"><strong>${value}%</strong><span>${label}</span></div>`}
+function renderDetails(){const metric=metricConfig[activeMetric],data=[...selected].map(id=>districts.find(d=>d.id===id)).filter(Boolean),max=Math.max(1,...districts.map(d=>d[metric.key]));selectedCount.textContent=`${selected.size} selected`;if(!data.length){detailList.innerHTML=`<div class="detail-item"><p><b>No districts selected</b></p><small>Select districts on the map to compare details.</small></div>`;return}detailList.innerHTML=data.map(d=>`<div class="detail-item" onmouseenter="setHover('${d.id}')" onmouseleave="setHover(null)"><div class="detail-row"><div><p><b>${d.name}</b></p><small>Population ${formatNumber(d.pop)}K · Houses ${formatNumber(d.houses)}K</small></div><div style="text-align:right"><b style="font-size:22px;color:${palette.accent2}">${formatNumber(d[metric.key])}</b><br><small>${metric.suffix||"score"}</small></div></div><div class="progress"><div style="width:${Math.min(100,d[metric.key]/max*100)}%"></div></div></div>`).join("")}
+function renderAll(){renderMetrics();renderKpis();renderMap();renderTooltip();renderCharts();renderDetails();donut("waterDonut",avg("water"),"Water scheme coverage");donut("agriDonut",avg("agriculture"),"Agriculture score")}
+async function loadGeoJson(){try{geoStatus="loading";renderMap();const res=await fetch(GEOJSON_URL);if(!res.ok)throw new Error(res.status);const geo=await res.json(),features=Array.isArray(geo.features)?geo.features:[];const bf=features.filter(f=>["balochistan","baluchistan"].includes(normalizeName(provinceName(f))));if(!bf.length)throw new Error("No Balochistan district features found");addMissingDistrictRecords(bf);projectPoint=createProjector(bboxFromFeatures(bf));mapPaths=bf.map((f,i)=>{const name=featureName(f),data=findDistrictData(name);return{key:`${name}-${i}`,name,id:data?data.id:normalizeName(name),data,path:geometryToPath(f.geometry,projectPoint)}});geoStatus="loaded"}catch(e){console.warn("GeoJSON load failed. Fallback map shown.",e);mapPaths=[];projectPoint=createProjector(null);geoStatus="fallback"}renderAll()}
+function buildIllustratorSvg(){const maxPop=Math.max(1,...districts.map(d=>d.pop)),totalPop=total("pop"),totalHouses=total("houses"),totalLivestock=total("livestock"),avgWater=avg("water");const metricButtons=Object.values(metricConfig).map((m,i)=>{const y=270+i*39,active=i===0;return `<g><rect x="55" y="${y}" width="285" height="34" rx="14" fill="${active?"#2f3438":"#eef0f2"}" stroke="${active?"#b14ca3":"#ffffff"}" opacity="${active?"1":".58"}"/><circle cx="77" cy="${y+17}" r="6" fill="${active?"#62d6ce":"#b14ca3"}"/><text x="94" y="${y+22}" class="metricText" fill="${active?"#ffffff":"#2f3438"}">${escapeXml(m.label)}</text></g>`}).join("");const actualMap=mapPaths.length?mapPaths.map(item=>`<path d="${item.path}" fill="rgba(47,52,56,.84)" stroke="#ffffff" stroke-width="1"/>`).join(""):`<path d="${fallbackProvincePath}" fill="url(#darkGrad)" stroke="#fff" stroke-width="3"/>`;const markerLayer=districts.map(d=>{const [x,y]=mapPaths.length?projectPoint([d.lon,d.lat]):[d.x,d.y];const r=5+(d.pop/maxPop)*12;return `<g><circle cx="${x}" cy="${y}" r="${r.toFixed(1)}" fill="url(#bubble)" stroke="#fff" stroke-width="1.6"/><text x="${x}" y="${y-8}" class="districtLabel">${escapeXml(d.name)}</text></g>`}).join("");return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9dadd"/><stop offset="1" stop-color="#c2c4c8"/></linearGradient><linearGradient id="darkGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#464b50"/><stop offset=".55" stop-color="#2f3438"/><stop offset="1" stop-color="#181b1f"/></linearGradient><radialGradient id="bubble" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#ecade7"/><stop offset="1" stop-color="#b14ca3" stop-opacity=".78"/></radialGradient><style>text{font-family:Arial,Helvetica,sans-serif}.metricText{font-size:11px;font-weight:700}.districtLabel{font-size:8px;font-weight:800;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:rgba(47,52,56,.75);stroke-width:2px}.kpiTitle{font-size:10px;font-weight:800;fill:#6b7178}.kpiValue{font-size:30px;font-weight:900;fill:#2f3438}</style></defs><rect width="1600" height="900" fill="url(#bg)"/><rect x="25" y="25" width="1550" height="850" rx="40" fill="#cfd1d5" stroke="#ffffff" stroke-width="1.5"/><g id="left-sidebar"><rect x="55" y="60" width="285" height="180" rx="30" fill="#2f3438"/><text x="85" y="105" font-size="11" font-weight="900" fill="#fff" opacity=".52">PRESENTATION DASHBOARD</text><text x="85" y="145" font-size="36" font-weight="900" fill="#fff">Balochistan</text><text x="85" y="182" font-size="36" font-weight="900" fill="#fff">Data Atlas</text><text x="85" y="215" font-size="13" fill="#fff" opacity=".72">Updated actual province map + district boundaries</text>${metricButtons}</g><g id="kpis"><rect x="365" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="383" y="95" class="kpiTitle">PROVINCE POPULATION</text><text x="383" y="140" class="kpiValue">${formatNumber(totalPop)} K</text><rect x="570" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="588" y="95" class="kpiTitle">UC HOUSES</text><text x="588" y="140" class="kpiValue">${formatNumber(totalHouses)} K</text><rect x="775" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="793" y="95" class="kpiTitle">LIVESTOCK TOTAL</text><text x="793" y="140" class="kpiValue">${formatNumber(totalLivestock)} K</text><rect x="980" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="998" y="95" class="kpiTitle">AVG WATER SCHEMES</text><text x="998" y="140" class="kpiValue">${avgWater} %</text></g><g id="map-panel"><rect x="365" y="190" width="780" height="490" rx="30" fill="#d8dadd" opacity=".75" stroke="#fff"/><text x="395" y="230" font-size="14" font-weight="900" fill="#2f3438">BALOCHISTAN ACTUAL DISTRICT BOUNDARIES</text><g transform="translate(395,245) scale(.66)">${actualMap}${markerLayer}</g></g><g id="right-panel"><rect x="1170" y="60" width="365" height="160" rx="28" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="1195" y="95" class="kpiTitle">ACTIVE LAYER</text><text x="1195" y="135" font-size="30" font-weight="900" fill="#2f3438">Cities Population</text><text x="1195" y="165" font-size="30" font-weight="900" fill="#2f3438">Province / District</text><text x="1195" y="198" font-size="13" fill="#6b7178">Static SVG export for Adobe Illustrator editing.</text><rect x="1170" y="410" width="365" height="435" rx="28" fill="#2f3438" opacity=".98" stroke="#fff"/><text x="1195" y="445" font-size="10" font-weight="900" fill="#fff" opacity=".45">DISTRICT DETAILS</text><text x="1195" y="475" font-size="24" font-weight="900" fill="#fff">3 selected</text></g></svg>`}
+function downloadIllustratorSvg(){const blob=new Blob([buildIllustratorSvg()],{type:"image/svg+xml;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="balochistan-dashboard-illustrator.svg";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)}
+console.assert(districts.length>=20,"Expected at least 20 district records.");console.assert(Object.keys(metricConfig).length===14,"Expected 14 dashboard metric layers.");console.assert(new Set(districts.map(d=>d.id)).size===districts.length,"District IDs must be unique.");console.assert(buildIllustratorSvg().includes("</svg>"),"SVG export must be complete.");
+renderAll();loadGeoJson();
+</script>
+</body>
+</html>
 
-const metricConfig = {
-  provincePop: { label: "Cities Population (Province)", icon: Icons.Users, suffix: "K", key: "pop" },
-  districtPop: { label: "Cities Population (District)", icon: Icons.MapPinned, suffix: "K", key: "pop" },
-  density: { label: "Population Density", icon: Icons.Activity, suffix: "/km²", key: "density" },
-  ucPop: { label: "UC Population", icon: Icons.Layers, suffix: "K", key: "ucPop" },
-  adult: { label: "Adult Population", icon: Icons.Users, suffix: "K", key: "adult" },
-  housing: { label: "Housing Map", icon: Icons.Home, suffix: "K", key: "houses" },
-  ucHouses: { label: "UC Houses", icon: Icons.Building2, suffix: "K", key: "houses" },
-  crop: { label: "Crop Maps", icon: Icons.Wheat, suffix: "%", key: "crops" },
-  agriculture: { label: "Agriculture Data", icon: Icons.Wheat, suffix: "%", key: "agriculture" },
-  livestock: { label: "Livestock Total", icon: Icons.PawPrint, suffix: "K", key: "livestock" },
-  facilities: { label: "Livestock Facilities", icon: Icons.Building2, suffix: "", key: "facilities" },
-  mineral: { label: "Mineral Map", icon: Icons.Mountain, suffix: "%", key: "minerals" },
-  water: { label: "Water Schemes (District)", icon: Icons.Droplets, suffix: "%", key: "water" },
-  waterCompare: { label: "Water Comparison", icon: Icons.Droplets, suffix: "%", key: "waterCompare" },
-};
 
-const MAP = { width: 700, height: 820 };
 
-const provincePath = [
-  "M95,205",
-  "C130,158 196,122 270,110",
-  "C328,100 377,123 424,125",
-  "C482,128 552,151 615,202",
-  "C653,233 660,270 626,301",
-  "C596,329 562,334 558,374",
-  "C553,424 608,454 586,505",
-  "C566,553 512,566 488,613",
-  "C462,665 505,704 463,743",
-  "C421,782 359,736 303,740",
-  "C248,744 212,793 158,760",
-  "C114,733 117,667 86,625",
-  "C52,579 28,536 55,486",
-  "C80,440 127,419 133,371",
-  "C139,321 95,298 78,254",
-  "C68,229 76,214 95,205",
-  "Z",
-].join(" ");
-
-const districtBoundaryGuides = [
-  "M98,210 C175,185 240,150 310,112",
-  "M305,112 C310,188 300,255 285,325 C270,395 240,462 198,544 C170,598 162,674 158,760",
-  "M424,125 C386,178 356,235 345,306 C334,376 344,445 377,519 C400,574 374,655 303,740",
-  "M615,202 C550,224 496,247 452,285 C421,312 388,345 345,306",
-  "M558,374 C505,390 456,420 423,467 C388,519 424,579 488,613",
-  "M55,486 C122,485 178,510 198,544 C230,604 284,633 377,519",
-  "M86,625 C150,625 225,641 303,740",
-  "M463,743 C445,690 438,633 488,613",
-  "M133,371 C212,358 281,356 345,306 C407,256 478,215 615,202",
-];
-
-const districtGeoCenters = {
-  chagai: [64.1, 29.7],
-  nushki: [66.02, 29.55],
-  kharan: [65.42, 28.58],
-  washuk: [64.4, 27.7],
-  panjgur: [64.09, 26.97],
-  kech: [63.05, 26.0],
-  gwadar: [62.32, 25.13],
-  lasbela: [66.7, 26.23],
-  hub: [67.1, 25.03],
-  khuzdar: [66.61, 27.8],
-  kalat: [66.59, 29.03],
-  mastung: [66.84, 29.8],
-  quetta: [66.99, 30.18],
-  pishin: [67.0, 30.58],
-  chaman: [66.45, 30.92],
-  zhob: [69.45, 31.34],
-  loralai: [68.58, 30.37],
-  sibi: [67.88, 29.54],
-  kacchi: [67.5, 29.05],
-  nasirabad: [68.04, 28.42],
-  jafarabad: [68.25, 28.27],
-};
-
-const mapBounds = {
-  west: 60.7,
-  south: 24.65,
-  east: 70.55,
-  north: 32.2,
-};
-
-const actualMapEmbedUrl = "https://www.openstreetmap.org/export/embed.html?bbox=60.7%2C24.65%2C70.55%2C32.2&layer=mapnik";
-
-function mercatorY(lat) {
-  const rad = (lat * Math.PI) / 180;
-  return Math.log(Math.tan(Math.PI / 4 + rad / 2));
-}
-
-function districtPoint(district) {
-  const center = districtGeoCenters[district.id];
-  if (!center) return [350, 410];
-
-  const lon = center[0];
-  const lat = center[1];
-  const x = ((lon - mapBounds.west) / (mapBounds.east - mapBounds.west)) * MAP.width;
-  const northY = mercatorY(mapBounds.north);
-  const southY = mercatorY(mapBounds.south);
-  const y = ((northY - mercatorY(lat)) / (northY - southY)) * MAP.height;
-
-  return [x, y];
-}
-
-function number(value) {
-  return new Intl.NumberFormat("en-US").format(value || 0);
-}
-
-function validateDashboardData() {
-  const metricKeys = Object.values(metricConfig).map((metric) => metric.key);
-  const districtIds = districts.map((district) => district.id);
-  const missingMetricData = metricKeys.filter((key) => districts.some((district) => typeof district[key] !== "number"));
-  const allPointsFinite = districts.every((district) => districtPoint(district).every((value) => Number.isFinite(value)));
-
-  return {
-    paletteOk: Boolean(palette.bg && palette.ink && palette.muted && palette.accent && palette.accent2),
-    districtCountOk: districts.length >= 20,
-    metricCountOk: Object.keys(metricConfig).length === 14,
-    metricsHaveIcons: Object.values(metricConfig).every((metric) => typeof metric.icon === "function"),
-    noMissingMetricData: missingMetricData.length === 0,
-    noDuplicateDistrictIds: new Set(districtIds).size === districtIds.length,
-    outlineLooksValid: typeof provincePath === "string" && provincePath.length > 200,
-    boundaryGuidesOk: districtBoundaryGuides.length >= 8,
-    districtPointsOk: allPointsFinite,
-  };
-}
-
-const dashboardSelfTests = validateDashboardData();
-if (typeof console !== "undefined") {
-  console.assert(dashboardSelfTests.paletteOk, "Palette should define all required colors.");
-  console.assert(dashboardSelfTests.districtCountOk, "Expected at least 20 district records.");
-  console.assert(dashboardSelfTests.metricCountOk, "Expected 14 dashboard metric layers.");
-  console.assert(dashboardSelfTests.metricsHaveIcons, "Every metric should use a local inline SVG icon.");
-  console.assert(dashboardSelfTests.noMissingMetricData, "Every district must contain numeric values for every metric key.");
-  console.assert(dashboardSelfTests.noDuplicateDistrictIds, "District IDs must be unique.");
-  console.assert(dashboardSelfTests.outlineLooksValid, "Province outline should be a valid SVG path string.");
-  console.assert(dashboardSelfTests.boundaryGuidesOk, "Expected internal boundary guide paths.");
-  console.assert(dashboardSelfTests.districtPointsOk, "District marker points must be finite SVG coordinates.");
-}
-
-function MetricButton({ id, active, onClick }) {
-  const config = metricConfig[id];
-  const Icon = config.icon;
-
-  return (
-    <motion.button
-      type="button"
-      whileHover={{ y: -3, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={() => onClick(id)}
-      className={`group relative overflow-hidden rounded-2xl border px-3 py-2 text-left transition-all ${
-        active
-          ? "border-[#b14ca3] bg-[#2f3438] text-white shadow-xl"
-          : "border-white/40 bg-white/35 text-[#2f3438] hover:bg-white/55"
-      }`}
-    >
-      <div className="absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" style={{ background: "radial-gradient(circle at top left, rgba(177,76,163,.35), transparent 55%)" }} />
-      <div className="relative flex items-center gap-2">
-        <Icon size={16} className={active ? "text-[#62d6ce]" : "text-[#b14ca3]"} />
-        <span className="text-[11px] font-semibold tracking-wide">{config.label}</span>
-      </div>
-    </motion.button>
-  );
-}
-
-function KpiCard({ title, value, suffix, icon: Icon, delay = 0 }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/35 p-4 shadow-[0_18px_40px_rgba(0,0,0,.08)] backdrop-blur"
-    >
-      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-[#b14ca3]/15 blur-xl" />
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#6b7178]">{title}</p>
-          <p className="mt-2 text-3xl font-black tracking-tight text-[#2f3438]">
-            {number(value)}
-            <span className="text-sm font-bold text-[#b14ca3]"> {suffix}</span>
-          </p>
-        </div>
-        <div className="rounded-2xl bg-[#2f3438] p-2 text-[#62d6ce]">
-          <Icon size={20} />
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function BalochistanMap({ selected, activeMetric, onToggle, hovered, setHovered }) {
-  const metric = metricConfig[activeMetric];
-  const max = Math.max(1, ...districts.map((district) => district[metric.key]));
-
-  return (
-    <div className="relative h-full w-full overflow-hidden rounded-[2rem] border border-white/40 bg-[#d8dadd]/55 shadow-[0_28px_90px_rgba(0,0,0,.14)] backdrop-blur">
-      <div className="absolute left-6 top-6 z-30 rounded-3xl bg-white/70 px-4 py-3 shadow-lg backdrop-blur-md">
-        <div className="flex items-center gap-2 text-[#2f3438]">
-          <Icons.Sparkles size={18} className="text-[#b14ca3]" />
-          <span className="text-xs font-black uppercase tracking-[0.25em]">Balochistan Map</span>
-        </div>
-        <p className="mt-1 max-w-md text-xs text-[#6b7178]">Self-contained province map restored. Click districts to compare data.</p>
-      </div>
-
-      <svg viewBox={`0 0 ${MAP.width} ${MAP.height}`} className="absolute inset-0 z-20 h-full w-full" preserveAspectRatio="xMidYMid meet">
-        <defs>
-          <filter id="mapShadow" x="-25%" y="-25%" width="150%" height="150%">
-            <feDropShadow dx="0" dy="24" stdDeviation="18" floodColor="#000" floodOpacity="0.24" />
-          </filter>
-          <linearGradient id="mapGradient" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#464b50" />
-            <stop offset="0.55" stopColor="#2f3438" />
-            <stop offset="1" stopColor="#181b1f" />
-          </linearGradient>
-          <radialGradient id="mapGlow" cx="50%" cy="45%" r="60%">
-            <stop offset="0" stopColor="rgba(98,214,206,.22)" />
-            <stop offset="1" stopColor="rgba(177,76,163,0)" />
-          </radialGradient>
-          <radialGradient id="bubble" cx="50%" cy="45%" r="55%">
-            <stop offset="0" stopColor="rgba(236,173,231,.95)" />
-            <stop offset="1" stopColor="rgba(177,76,163,.45)" />
-          </radialGradient>
-          <clipPath id="balochistanClip">
-            <path d={provincePath} />
-          </clipPath>
-        </defs>
-
-        <rect x="0" y="0" width={MAP.width} height={MAP.height} fill="rgba(255,255,255,.08)" />
-        <circle cx="350" cy="410" r="310" fill="url(#mapGlow)" />
-
-        <motion.path
-          d={provincePath}
-          fill="url(#mapGradient)"
-          filter="url(#mapShadow)"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 1.25, ease: "easeInOut" }}
-        />
-
-        <motion.path
-          d={provincePath}
-          fill="none"
-          stroke="rgba(255,255,255,.82)"
-          strokeWidth="2.4"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 1.6, delay: 0.15 }}
-        />
-
-        <g clipPath="url(#balochistanClip)">
-          {districtBoundaryGuides.map((line, index) => (
-            <motion.path
-              key={`guide-${index}`}
-              d={line}
-              fill="none"
-              stroke="rgba(255,255,255,.35)"
-              strokeWidth="1.45"
-              strokeDasharray={index % 2 ? "7 7" : ""}
-              initial={{ opacity: 0, pathLength: 0 }}
-              animate={{ opacity: 1, pathLength: 1 }}
-              transition={{ delay: 0.45 + index * 0.06, duration: 1 }}
-            />
-          ))}
-        </g>
-
-        {selected.slice(0, 6).map((id, index) => {
-          const district = districts.find((item) => item.id === id);
-          if (!district) return null;
-          const [x, y] = districtPoint(district);
-          return (
-            <motion.path
-              key={`flow-${id}`}
-              d={`M350 405 C${350 + index * 35} ${315 - index * 20}, ${x - 45} ${y - 55}, ${x} ${y}`}
-              fill="none"
-              stroke={index % 2 ? "#62d6ce" : "#b14ca3"}
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeDasharray="10 12"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 0.95, strokeDashoffset: [0, -80] }}
-              transition={{ pathLength: { duration: 1.1 }, strokeDashoffset: { duration: 2.2, repeat: Infinity, ease: "linear" } }}
-            />
-          );
-        })}
-
-        {districts.map((district, index) => {
-          const [x, y] = districtPoint(district);
-          const isSelected = selected.includes(district.id);
-          const isHovered = hovered === district.id;
-          const radius = 12 + (district[metric.key] / max) * 28;
-
-          return (
-            <g
-              key={district.id}
-              onMouseEnter={() => setHovered(district.id)}
-              onMouseLeave={() => setHovered(null)}
-              onClick={() => onToggle(district.id)}
-              style={{ cursor: "pointer" }}
-            >
-              {isSelected ? (
-                <motion.circle
-                  cx={x}
-                  cy={y}
-                  r={radius + 10}
-                  fill="none"
-                  stroke="#62d6ce"
-                  strokeWidth="2.5"
-                  strokeDasharray="6 7"
-                  animate={{ rotate: 360, scale: [1, 1.08, 1] }}
-                  transition={{ rotate: { duration: 6, repeat: Infinity, ease: "linear" }, scale: { duration: 1.8, repeat: Infinity } }}
-                  style={{ transformOrigin: `${x}px ${y}px` }}
-                />
-              ) : null}
-              <motion.circle
-                cx={x}
-                cy={y}
-                r={radius}
-                fill="url(#bubble)"
-                stroke={isSelected || isHovered ? "#ffffff" : "rgba(255,255,255,.7)"}
-                strokeWidth={isSelected || isHovered ? 3 : 1.5}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: isHovered ? 1.14 : 1, opacity: 1 }}
-                transition={{ delay: 0.45 + index * 0.025, type: "spring", stiffness: 180 }}
-              />
-              <motion.circle
-                cx={x}
-                cy={y}
-                r={radius + 5}
-                fill="none"
-                stroke="rgba(177,76,163,.45)"
-                strokeWidth="2"
-                animate={{ r: [radius, radius + 14, radius], opacity: [0.55, 0, 0.55] }}
-                transition={{ duration: 3, repeat: Infinity, delay: index * 0.08 }}
-              />
-              <text x={x} y={y - 2} textAnchor="middle" fill="#fff" fontSize="15" fontWeight="900" style={{ paintOrder: "stroke", stroke: "rgba(47,52,56,.55)", strokeWidth: 3 }}>
-                {district[metric.key]}
-              </text>
-              <text x={x} y={y + 14} textAnchor="middle" fill="#fff" fontSize="8.5" fontWeight="800" style={{ paintOrder: "stroke", stroke: "rgba(47,52,56,.65)", strokeWidth: 2 }}>
-                {district.name}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-
-      <AnimatePresence>
-        {hovered ? (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute bottom-6 left-6 z-30 rounded-3xl bg-[#2f3438]/95 p-4 text-white shadow-2xl backdrop-blur"
-          >
-            {(() => {
-              const district = districts.find((item) => item.id === hovered);
-              if (!district) return null;
-              return (
-                <>
-                  <p className="text-xs uppercase tracking-[0.25em] text-[#62d6ce]">District preview</p>
-                  <h3 className="text-2xl font-black">{district.name}</h3>
-                  <p className="mt-1 text-sm text-white/70">
-                    {metric.label}: <b className="text-white">{number(district[metric.key])}{metric.suffix}</b>
-                  </p>
-                </>
-              );
-            })()}
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function Donut({ value, label }) {
-  const safeValue = Math.max(0, Math.min(100, value));
-  const data = [
-    { name: "Value", value: safeValue },
-    { name: "Remaining", value: 100 - safeValue },
-  ];
-
-  return (
-    <div className="relative h-44 rounded-3xl border border-white/40 bg-white/30 p-3">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie data={data} dataKey="value" innerRadius="62%" outerRadius="86%" startAngle={90} endAngle={-270} paddingAngle={2}>
-            <Cell fill={palette.accent} />
-            <Cell fill="rgba(47,52,56,.18)" />
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-black text-[#2f3438]">{safeValue}%</span>
-        <span className="max-w-[130px] text-center text-[10px] font-bold uppercase tracking-wider text-[#6b7178]">{label}</span>
-      </div>
-    </div>
-  );
-}
-
-export default function BalochistanInfographicDashboard() {
-  const [activeMetric, setActiveMetric] = useState("provincePop");
-  const [selected, setSelected] = useState(["quetta", "khuzdar", "kech"]);
-  const [hovered, setHovered] = useState(null);
-
-  const metric = metricConfig[activeMetric];
-  const selectedDistricts = useMemo(() => districts.filter((district) => selected.includes(district.id)), [selected]);
-  const chartData = selectedDistricts.length ? selectedDistricts : districts.slice(0, 6);
-  const totalPop = districts.reduce((sum, district) => sum + district.pop, 0);
-  const totalHouses = districts.reduce((sum, district) => sum + district.houses, 0);
-  const totalLivestock = districts.reduce((sum, district) => sum + district.livestock, 0);
-  const avgWater = Math.round(districts.reduce((sum, district) => sum + district.water, 0) / districts.length);
-  const avgAgriculture = Math.round(districts.reduce((sum, district) => sum + district.agriculture, 0) / districts.length);
-  const ActiveMetricIcon = metric.icon;
-
-  function toggleDistrict(id) {
-    setSelected((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
-  }
-
-  return (
-    <div className="min-h-screen w-full bg-[#cfd1d5] p-5 font-sans text-[#2f3438]">
-      <div className="mx-auto aspect-video max-h-[96vh] w-full max-w-[1600px] overflow-hidden rounded-[2.5rem] border border-white/50 bg-[#cfd1d5] p-7 shadow-[0_35px_100px_rgba(0,0,0,.24)]">
-        <div className="grid h-full grid-cols-[310px_1fr_360px] gap-6">
-          <aside className="flex min-h-0 flex-col gap-4">
-            <motion.div initial={{ opacity: 0, x: -18 }} animate={{ opacity: 1, x: 0 }} className="rounded-[2rem] bg-[#2f3438] p-5 text-white shadow-2xl">
-              <div className="mb-4 flex items-center gap-3">
-                <div className="rounded-2xl bg-white/10 p-2 text-[#62d6ce]">
-                  <Icons.MapPinned />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.32em] text-white/50">Presentation Dashboard</p>
-                  <h1 className="text-3xl font-black leading-none tracking-tight">Balochistan Data Atlas</h1>
-                </div>
-              </div>
-              <p className="text-sm leading-relaxed text-white/68">Interactive province dashboard for population, housing, crop, agriculture, livestock, minerals, and water schemes.</p>
-            </motion.div>
-
-            <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-auto pr-1">
-              {Object.keys(metricConfig).map((id) => (
-                <MetricButton key={id} id={id} active={activeMetric === id} onClick={setActiveMetric} />
-              ))}
-            </div>
-          </aside>
-
-          <main className="grid min-h-0 grid-rows-[132px_1fr_188px] gap-5">
-            <section className="grid grid-cols-4 gap-4">
-              <KpiCard title="Province Population" value={totalPop} suffix="K" icon={Icons.Users} delay={0.05} />
-              <KpiCard title="UC Houses" value={totalHouses} suffix="K" icon={Icons.Home} delay={0.12} />
-              <KpiCard title="Livestock Total" value={totalLivestock} suffix="K" icon={Icons.PawPrint} delay={0.18} />
-              <KpiCard title="Avg Water Schemes" value={avgWater} suffix="%" icon={Icons.Droplets} delay={0.24} />
-            </section>
-
-            <BalochistanMap selected={selected} activeMetric={activeMetric} onToggle={toggleDistrict} hovered={hovered} setHovered={setHovered} />
-
-            <section className="grid grid-cols-3 gap-4">
-              <div className="rounded-3xl border border-white/40 bg-white/35 p-4 shadow-lg backdrop-blur">
-                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Selected district comparison</p>
-                <ResponsiveContainer width="100%" height="82%">
-                  <BarChart data={chartData}>
-                    <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} />
-                    <YAxis hide />
-                    <Tooltip />
-                    <Bar dataKey={metric.key} radius={[8, 8, 0, 0]} fill={palette.accent} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="rounded-3xl border border-white/40 bg-white/35 p-4 shadow-lg backdrop-blur">
-                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Water comparison trend</p>
-                <ResponsiveContainer width="100%" height="82%">
-                  <AreaChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(47,52,56,.15)" />
-                    <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} />
-                    <YAxis hide />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="water" stroke={palette.accent} fill="rgba(177,76,163,.35)" strokeWidth={3} />
-                    <Area type="monotone" dataKey="waterCompare" stroke={palette.accent2} fill="rgba(98,214,206,.25)" strokeWidth={3} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="rounded-3xl border border-white/40 bg-white/35 p-4 shadow-lg backdrop-blur">
-                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Agriculture and crop profile</p>
-                <ResponsiveContainer width="100%" height="82%">
-                  <LineChart data={chartData}>
-                    <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} />
-                    <YAxis hide />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="agriculture" stroke={palette.accent} strokeWidth={3} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="crops" stroke={palette.accent2} strokeWidth={3} dot={{ r: 4 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </section>
-          </main>
-
-          <aside className="flex min-h-0 flex-col gap-5">
-            <div className="rounded-[2rem] border border-white/40 bg-white/35 p-5 shadow-lg backdrop-blur">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#6b7178]">Active Layer</p>
-                  <h2 className="mt-1 text-2xl font-black leading-tight">{metric.label}</h2>
-                </div>
-                <div className="rounded-3xl bg-[#2f3438] p-3 text-[#62d6ce]">
-                  <ActiveMetricIcon size={28} />
-                </div>
-              </div>
-              <p className="mt-4 text-sm leading-relaxed text-[#6b7178]">The external map iframe was removed so the map remains visible offline. The dashboard now uses a self-contained SVG Balochistan map with local district marker coordinates.</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Donut value={avgWater} label="Water scheme coverage" />
-              <Donut value={avgAgriculture} label="Agriculture score" />
-            </div>
-
-            <div className="min-h-0 flex-1 overflow-hidden rounded-[2rem] border border-white/40 bg-[#2f3438] p-5 text-white shadow-2xl">
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-white/45">District details</p>
-                  <h3 className="text-xl font-black">{selected.length} selected</h3>
-                </div>
-                <button type="button" onClick={() => setSelected([])} className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-white/70 hover:bg-white/20">
-                  Clear
-                </button>
-              </div>
-
-              <div className="h-[calc(100%-64px)] space-y-3 overflow-auto pr-1">
-                {(selectedDistricts.length ? selectedDistricts : districts.slice(0, 5)).map((district, index) => (
-                  <motion.div
-                    key={district.id}
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.04 }}
-                    onMouseEnter={() => setHovered(district.id)}
-                    onMouseLeave={() => setHovered(null)}
-                    className="rounded-2xl border border-white/10 bg-white/7 p-3 hover:bg-white/12"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="font-black">{district.name}</p>
-                        <p className="text-xs text-white/55">Population {number(district.pop)}K · Houses {number(district.houses)}K</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xl font-black text-[#62d6ce]">{number(district[metric.key])}</p>
-                        <p className="text-[10px] text-white/45">{metric.suffix || "score"}</p>
-                      </div>
-                    </div>
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                      <motion.div
-                        className="h-full rounded-full bg-[#b14ca3]"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.min(100, (district[metric.key] / Math.max(1, ...districts.map((item) => item[metric.key]))) * 100)}%` }}
-                        transition={{ duration: 0.8 }}
-                      />
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </div>
-  );
-}
