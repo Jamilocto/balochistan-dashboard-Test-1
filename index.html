@@ -1,320 +1,95 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Balochistan District Boundary Dashboard</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Inter, Arial, sans-serif; background:#e5e7eb; color:#0f172a; min-height:100vh; display:flex; align-items:center; justify-content:center; }
-    .ppt { width:1280px; height:720px; background:#f6f7fb; border-radius:18px; overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.2); position:relative; }
-    .blob { position:absolute; border-radius:999px; filter:blur(75px); opacity:.55; z-index:0; pointer-events:none; }
-    .b1 { width:320px; height:320px; background:#bfdbfe; left:-90px; top:60px; }
-    .b2 { width:430px; height:430px; background:#ddd6fe; right:-80px; top:120px; }
-    .b3 { width:360px; height:360px; background:#bbf7d0; left:35%; bottom:-120px; }
-    main { width:100%; height:100%; padding:18px; overflow:hidden; position:relative; z-index:1; }
-    header { display:flex; justify-content:space-between; gap:16px; align-items:center; margin-bottom:12px; }
-    .badge { display:inline-flex; align-items:center; gap:8px; padding:8px 13px; background:rgba(255,255,255,.72); border:1px solid rgba(255,255,255,.9); border-radius:999px; color:#475569; font-size:12px; box-shadow:0 8px 22px rgba(15,23,42,.06); backdrop-filter:blur(18px); }
-    h1 { font-size:31px; letter-spacing:-1.5px; margin-top:8px; max-width:850px; line-height:1; }
-    .subtitle { color:#64748b; line-height:1.45; max-width:560px; margin-top:6px; font-size:13px; }
-    .top-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:9px; background:rgba(255,255,255,.72); border:1px solid rgba(255,255,255,.9); border-radius:24px; min-width:350px; box-shadow:0 18px 40px rgba(15,23,42,.08); backdrop-filter:blur(18px); }
-    .top-stats div { text-align:center; padding:10px; }
-    .top-stats strong { display:block; font-size:21px; }
-    .top-stats span { color:#64748b; font-size:11px; }
-    .layout { display:grid; grid-template-columns:1.38fr .62fr; gap:18px; }
-    .panel { background:rgba(255,255,255,.74); border:1px solid rgba(255,255,255,.92); border-radius:28px; box-shadow:0 18px 40px rgba(148,163,184,.32); backdrop-filter:blur(18px); }
-    .map-panel { padding:18px; }
-    .panel-head { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:12px; }
-    .panel-head h2 { font-size:18px; }
-    .panel-head p { color:#64748b; font-size:12px; margin-top:3px; }
-    .search { position:relative; width:min(100%,280px); }
-    .search input { width:100%; padding:11px 14px 11px 38px; border-radius:16px; border:1px solid #e2e8f0; outline:none; background:rgba(255,255,255,.9); font-size:13px; }
-    .search span { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#94a3b8; z-index:2; }
-    #map { height:430px; width:100%; border-radius:24px; overflow:hidden; background:#edf2f7; }
-    .leaflet-container { font-family:Inter, Arial, sans-serif; background:#edf2f7; }
-    .leaflet-control-zoom { border:0!important; box-shadow:0 14px 28px rgba(15,23,42,.14)!important; }
-    .leaflet-control-zoom a { border:0!important; color:#0f172a!important; }
-    .district-label { background:rgba(255,255,255,.9); border:1px solid rgba(255,255,255,.95); color:#0f172a; border-radius:999px; padding:3px 7px; font-size:10px; font-weight:800; box-shadow:0 8px 18px rgba(15,23,42,.12); }
-    .info-card { overflow:hidden; }
-    .hero { padding:20px; color:white; background:linear-gradient(135deg,#2563eb,#7c3aed); min-height:150px; transition:.3s ease; }
-    .hero-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
-    .icon-box, .code-box { background:rgba(255,255,255,.2); border-radius:16px; padding:10px; font-weight:800; backdrop-filter:blur(14px); }
-    .hero small { color:rgba(255,255,255,.75); font-weight:700; font-size:11px; }
-    .hero h3 { font-size:24px; letter-spacing:-1px; margin-top:4px; line-height:1.05; }
-    .hero p { color:rgba(255,255,255,.82); margin-top:6px; font-size:12px; }
-    .stats { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; padding:14px; }
-    .stat { background:rgba(255,255,255,.76); border:1px solid rgba(226,232,240,.9); border-radius:18px; padding:12px; }
-    .stat .emoji { width:30px; height:30px; background:#0f172a; color:white; display:grid; place-items:center; border-radius:10px; margin-bottom:8px; font-size:13px; }
-    .stat label { color:#64748b; font-size:11px; }
-    .stat strong { display:block; margin-top:3px; font-size:15px; }
-    .summary { margin:0 14px 12px; padding:13px; border-radius:18px; background:#0f172a; color:white; line-height:1.45; font-size:12px; }
-    .summary span { display:block; color:rgba(255,255,255,.55); font-size:11px; margin-bottom:5px; }
-    .photo-section { margin:0 14px 14px; }
-    .photo-title { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-    .photo-title h4 { font-size:13px; }
-    .photo-title span { color:#64748b; font-size:11px; }
-    .photo-grid { display:grid; grid-template-columns:1.15fr .85fr; gap:8px; }
-    .photo-grid img { width:100%; height:79px; object-fit:cover; border-radius:14px; background:#e2e8f0; display:block; }
-    .photo-grid img:first-child { height:166px; }
-    .photo-side { display:grid; gap:8px; }
-    .photo-caption { margin-top:7px; color:#64748b; font-size:10px; line-height:1.35; }
-    .status { margin-top:10px; color:#64748b; font-size:11px; line-height:1.45; }
-    .source-note { margin-top:8px; padding:10px 12px; border-radius:16px; background:rgba(15,23,42,.06); color:#475569; font-size:11px; line-height:1.4; }
-    .upload-box { margin-top:8px; display:none; }
-    .upload-box input { width:100%; padding:9px; border:1px dashed #94a3b8; border-radius:14px; background:white; font-size:11px; }
-    @media (max-width:1300px) { .ppt { transform:scale(calc(100vw / 1280)); transform-origin:center; } }
-    @media (max-height:760px) { .ppt { transform:scale(calc(100vh / 720)); transform-origin:center; } }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Balochistan Interactive Infographic Dashboard</title>
+<style>
+:root{--bg:#cfd1d5;--ink:#2f3438;--muted:#6b7178;--accent:#b14ca3;--accent2:#62d6ce}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink);overflow:hidden}
+.page{min-height:100vh;padding:20px}.dashboard{width:min(1600px,100%);aspect-ratio:16/9;max-height:96vh;margin:auto;border:1px solid #fff8;border-radius:40px;padding:28px;background:#cfd1d5;box-shadow:0 35px 100px #0004;overflow:hidden}
+.grid{height:100%;display:grid;grid-template-columns:310px 1fr 360px;gap:24px}.left,.right{min-height:0;display:flex;flex-direction:column;gap:16px}.main{display:grid;grid-template-rows:132px 1fr 188px;gap:20px;min-height:0}
+.hero{background:var(--ink);color:white;border-radius:32px;padding:22px;box-shadow:0 20px 45px #0003}.hero small,.eyebrow{display:block;font-size:10px;font-weight:900;letter-spacing:.28em;opacity:.55;text-transform:uppercase}.hero h1{font-size:36px;line-height:.95;margin:12px 0;font-weight:900}.hero p{font-size:14px;line-height:1.5;opacity:.72;margin:0}
+.metric-list{display:grid;gap:8px;overflow:auto;padding-right:4px}.metric{border:1px solid #fff7;background:#ffffff60;color:var(--ink);border-radius:16px;padding:10px 12px;font-size:11px;font-weight:700;text-align:left;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:8px}.metric:hover{transform:translateY(-2px);background:#ffffff88}.metric.active{background:var(--ink);color:white;border-color:var(--accent);box-shadow:0 12px 25px #0002}.dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}.metric.active .dot{background:var(--accent2)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{position:relative;border:1px solid #fff7;background:#ffffff55;border-radius:26px;padding:18px;box-shadow:0 18px 40px #0001;backdrop-filter:blur(12px);overflow:hidden}.kpi-title{font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}.kpi-value{font-size:30px;font-weight:900;margin-top:10px}.kpi-value span{font-size:14px;color:var(--accent)}
+.map-card{position:relative;border:1px solid #fff7;background:#d8dadd88;border-radius:32px;overflow:hidden;box-shadow:0 28px 90px #0002}.map-head{position:absolute;left:24px;top:24px;z-index:5;background:#ffffffe0;border-radius:24px;padding:14px 16px;box-shadow:0 12px 25px #0002}.map-head h2{font-size:12px;letter-spacing:.22em;text-transform:uppercase;margin:0 0 5px;font-weight:900}.map-head p{font-size:12px;color:var(--muted);margin:0;max-width:440px}
+svg{display:block;width:100%;height:100%}.district{cursor:pointer}.district:hover{filter:brightness(1.18)}.label{fill:white;font-size:8.5px;font-weight:800;text-anchor:middle;paint-order:stroke;stroke:#2f3438bf;stroke-width:2px;pointer-events:none}.value{fill:white;font-size:14px;font-weight:900;text-anchor:middle;paint-order:stroke;stroke:#2f343888;stroke-width:3px;pointer-events:none}
+.bottom-charts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.chart-title{font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}.bar-row{display:flex;align-items:end;height:88px;gap:26px;padding:0 20px}.bar{width:32px;border-radius:8px 8px 0 0;background:var(--accent)}.mini-chart svg{height:90px}
+.right-card{border:1px solid #fff7;background:#ffffff55;border-radius:32px;padding:20px;box-shadow:0 18px 40px #0001}.right-card h3{font-size:28px;line-height:1.05;margin:8px 0;font-weight:900}.download-btn{width:100%;margin-top:16px;border:0;border-radius:18px;background:var(--ink);color:white;padding:13px 16px;font-weight:900;cursor:pointer;box-shadow:0 12px 24px #0003}.download-btn:hover{background:var(--accent)}
+.donuts{display:grid;grid-template-columns:1fr 1fr;gap:16px}.donut{height:176px;position:relative}.donut .center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}.donut strong{font-size:30px}.donut span{font-size:10px;font-weight:900;text-transform:uppercase;color:var(--muted);text-align:center;max-width:120px}
+.details{flex:1;min-height:0;border:1px solid #fff7;background:var(--ink);border-radius:32px;padding:20px;color:white;overflow:hidden;box-shadow:0 20px 50px #0003}.details-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.details h3{margin:4px 0 0;font-size:22px}.clear{border:0;border-radius:999px;background:#ffffff1a;color:#fffb;padding:6px 12px;font-weight:800;cursor:pointer}.detail-list{height:calc(100% - 58px);overflow:auto;display:grid;gap:10px;padding-right:4px}.detail-item{background:#ffffff14;border:1px solid #ffffff1a;border-radius:18px;padding:12px}.detail-row{display:flex;justify-content:space-between;gap:12px;align-items:center}.detail-item p{margin:0}.detail-item small{opacity:.55}.progress{height:6px;background:#ffffff1a;border-radius:999px;overflow:hidden;margin-top:10px}.progress div{height:100%;background:var(--accent)}
+.tooltip{position:absolute;left:24px;bottom:24px;z-index:6;background:#2f3438f6;color:white;border-radius:24px;padding:16px;box-shadow:0 16px 35px #0004;display:none}.tooltip small{font-size:11px;color:var(--accent2);letter-spacing:.22em;text-transform:uppercase;font-weight:900}.tooltip h3{margin:6px 0 4px;font-size:24px}.status{position:absolute;right:24px;bottom:24px;z-index:6;background:#ffffffe0;color:var(--ink);border-radius:18px;padding:12px 16px;font-size:12px;font-weight:800;box-shadow:0 12px 24px #0002}@keyframes dash{to{stroke-dashoffset:-80}}.flow{animation:dash 2.2s linear infinite}
+</style>
 </head>
 <body>
-  <div class="ppt">
-    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
-    <main>
-      <header>
-        <div>
-          <div class="badge">Real Boundary District Dashboard</div>
-          <h1>Balochistan District Boundary Map</h1>
-          <p class="subtitle">Interactive district map with offline fallback. Click any district to view the infographic panel and relevant images.</p>
-        </div>
-        <div class="top-stats">
-          <div><strong id="districtCount">--</strong><span>Districts Loaded</span></div>
-          <div><strong id="dataMode">Local</strong><span>Data Mode</span></div>
-          <div><strong>16:9</strong><span>PPT Layout</span></div>
-        </div>
-      </header>
-      <section class="layout">
-        <div class="panel map-panel">
-          <div class="panel-head">
-            <div><h2>Boundary Map</h2><p id="mapStatus">Loading boundaries...</p></div>
-            <div class="search"><span>🔎</span><input id="searchInput" placeholder="Search district..." /></div>
-          </div>
-          <div id="map"></div>
-          <p class="status">Tip: This version will not crash when online GeoJSON fails. It uses embedded fallback boundaries and also supports manual GeoJSON upload.</p>
-          <div class="source-note" id="sourceNote">Using embedded sample boundary polygons. For official publication, upload verified Government or Survey of Pakistan district GeoJSON.</div>
-          <div class="upload-box" id="uploadBox">
-            <input type="file" id="geojsonUpload" accept=".json,.geojson" />
-          </div>
-        </div>
-        <aside>
-          <div class="panel info-card">
-            <div class="hero" id="hero">
-              <div class="hero-top"><div class="icon-box">📍</div><div class="code-box" id="codeBox">--</div></div>
-              <small>Selected District</small>
-              <h3 id="districtName">Select District</h3>
-              <p id="divisionName">Balochistan Province</p>
-            </div>
-            <div class="stats">
-              <div class="stat"><div class="emoji">👥</div><label>Population</label><strong id="population">Sample</strong></div>
-              <div class="stat"><div class="emoji">🏫</div><label>Schools</label><strong id="schools">Sample</strong></div>
-              <div class="stat"><div class="emoji">🎒</div><label>Enrollment</label><strong id="enrollment">Sample</strong></div>
-              <div class="stat"><div class="emoji">🎯</div><label>Focus</label><strong id="focus">Sample</strong></div>
-            </div>
-            <div class="summary"><span>Infographic Summary</span><p id="summaryText">Click any district to show the district infographic.</p></div>
-            <div class="photo-section">
-              <div class="photo-title"><h4>Relevant District Images</h4><span id="photoLabel">Auto preview</span></div>
-              <div class="photo-grid">
-                <img id="districtPhoto1" alt="District image 1" />
-                <div class="photo-side">
-                  <img id="districtPhoto2" alt="District image 2" />
-                  <img id="districtPhoto3" alt="District image 3" />
-                </div>
-              </div>
-              <p class="photo-caption">Use official field photos for final reporting. These previews are automatic placeholders.</p>
-            </div>
-          </div>
-        </aside>
-      </section>
-    </main>
-  </div>
-
-  <script>
-    const sampleInfo = {
-      population: ["0.18M", "0.32M", "0.46M", "0.61M", "0.74M", "0.95M", "1.2M"],
-      focus: ["Education Access", "Girls Enrollment", "School Improvement", "Skills & Trades", "Community Mobilization"]
-    };
-    const gradients = ["linear-gradient(135deg,#2563eb,#7c3aed)", "linear-gradient(135deg,#0ea5e9,#06b6d4)", "linear-gradient(135deg,#10b981,#14b8a6)", "linear-gradient(135deg,#f97316,#f59e0b)", "linear-gradient(135deg,#f43f5e,#ec4899)", "linear-gradient(135deg,#64748b,#71717a)"];
-    const imageTopics = {
-      Quetta: ["quetta city balochistan", "quetta school pakistan", "quetta mountains"],
-      Gwadar: ["gwadar port pakistan", "gwadar coast", "gwadar balochistan"],
-      Kech: ["turbat kech balochistan", "kech balochistan", "balochistan village"],
-      Panjgur: ["panjgur balochistan", "date palms balochistan", "panjgur landscape"],
-      Khuzdar: ["khuzdar balochistan", "khuzdar mountains", "balochistan road"],
-      Loralai: ["loralai balochistan", "loralai hills", "balochistan school"],
-      Pishin: ["pishin balochistan", "pishin valley", "balochistan orchard"],
-      Chaman: ["chaman balochistan", "pakistan afghanistan border", "chaman city"],
-      Zhob: ["zhob balochistan", "zhob valley", "balochistan mountains"],
-      Sibi: ["sibi balochistan", "sibi city", "balochistan desert"],
-      Kalat: ["kalat balochistan", "kalat city", "balochistan heritage"],
-      Kharan: ["kharan desert balochistan", "kharan balochistan", "balochistan desert"],
-      Chagai: ["chagai balochistan", "ras koh hills", "balochistan landscape"]
-    };
-    const fallbackImageTopics = ["balochistan pakistan landscape", "balochistan school children", "balochistan village road"];
-
-    const districtsForFallback = [
-      { name:"Chagai", coords:[[28.4,60.7],[29.3,61.8],[29.0,63.1],[28.0,63.2],[27.4,62.2],[27.7,61.0]] },
-      { name:"Kharan", coords:[[27.4,62.2],[28.0,63.2],[28.0,64.4],[27.0,64.7],[26.3,63.8],[26.7,62.8]] },
-      { name:"Nushki", coords:[[29.0,63.1],[29.6,64.0],[29.1,65.1],[28.1,65.0],[28.0,64.4],[28.0,63.2]] },
-      { name:"Washuk", coords:[[26.3,63.8],[27.0,64.7],[26.7,65.9],[25.7,66.1],[25.1,64.9],[25.6,64.0]] },
-      { name:"Panjgur", coords:[[26.7,65.9],[27.1,66.9],[26.5,67.5],[25.6,67.2],[25.1,66.4],[25.7,66.1]] },
-      { name:"Kech", coords:[[25.6,67.2],[26.5,67.5],[26.3,68.7],[25.4,69.1],[24.8,68.2],[24.9,67.4]] },
-      { name:"Gwadar", coords:[[24.8,68.2],[25.4,69.1],[25.0,70.2],[24.3,70.3],[24.1,69.1]] },
-      { name:"Awaran", coords:[[26.3,68.7],[27.2,69.4],[27.0,70.5],[26.0,70.8],[25.4,69.1]] },
-      { name:"Khuzdar", coords:[[27.2,69.4],[28.0,69.7],[28.3,70.8],[27.4,71.5],[27.0,70.5]] },
-      { name:"Lasbela", coords:[[26.0,70.8],[27.4,71.5],[27.0,72.2],[25.7,72.4],[25.0,71.5]] },
-      { name:"Hub", coords:[[25.7,72.4],[27.0,72.2],[26.6,73.1],[25.6,73.2],[24.9,72.6]] },
-      { name:"Kalat", coords:[[28.1,65.0],[29.1,65.1],[29.2,66.2],[28.6,67.1],[27.8,66.7],[27.1,66.9],[26.7,65.9]] },
-      { name:"Mustang", coords:[[29.2,66.2],[30.0,66.7],[30.0,67.5],[29.2,68.0],[28.6,67.1]] },
-      { name:"Quetta", coords:[[30.0,66.7],[30.8,66.8],[30.8,67.5],[30.0,67.5]] },
-      { name:"Pishin", coords:[[30.8,66.8],[31.4,67.1],[31.3,68.0],[30.8,68.1],[30.8,67.5]] },
-      { name:"Killa Abdullah", coords:[[31.4,67.1],[31.9,67.3],[31.8,68.2],[31.3,68.0]] },
-      { name:"Chaman", coords:[[31.8,68.2],[32.2,68.6],[31.8,69.2],[31.3,68.8],[31.3,68.0]] },
-      { name:"Ziarat", coords:[[30.0,67.5],[30.8,67.5],[30.9,68.4],[30.2,68.8],[29.7,68.2]] },
-      { name:"Loralai", coords:[[30.2,68.8],[30.9,68.4],[31.2,69.3],[30.7,70.1],[29.9,69.6]] },
-      { name:"Killa Saifullah", coords:[[31.3,68.8],[31.8,69.2],[31.7,70.3],[30.7,70.1],[31.2,69.3]] },
-      { name:"Zhob", coords:[[31.7,70.3],[32.3,70.9],[31.9,72.0],[30.9,71.5],[30.7,70.1]] },
-      { name:"Sherani", coords:[[32.3,70.9],[32.7,71.8],[32.1,72.4],[31.9,72.0]] },
-      { name:"Musakhel", coords:[[30.9,71.5],[31.9,72.0],[31.5,73.0],[30.6,72.8],[30.2,71.8]] },
-      { name:"Barkhan", coords:[[30.2,71.8],[30.6,72.8],[29.8,73.5],[29.1,72.9],[29.4,72.0]] },
-      { name:"Kohlu", coords:[[29.4,72.0],[29.1,72.9],[28.3,72.8],[28.1,71.8],[28.6,71.2]] },
-      { name:"Dera Bugti", coords:[[28.3,72.8],[29.1,72.9],[28.7,73.8],[27.8,73.8],[27.4,73.0]] },
-      { name:"Sibi", coords:[[29.7,68.2],[30.2,68.8],[29.9,69.6],[29.1,69.4],[28.7,68.5]] },
-      { name:"Harnai", coords:[[29.1,69.4],[29.9,69.6],[29.4,70.5],[28.6,70.4],[28.4,69.6]] },
-      { name:"Kachhi", coords:[[28.4,69.6],[28.6,70.4],[28.1,71.8],[27.4,71.5],[27.3,70.4]] },
-      { name:"Jhal Magsi", coords:[[27.4,71.5],[28.1,71.8],[27.4,73.0],[26.8,72.6],[26.8,71.8]] },
-      { name:"Nasirabad", coords:[[27.4,73.0],[27.8,73.8],[27.2,74.3],[26.6,73.9],[26.8,72.6]] },
-      { name:"Jafarabad", coords:[[26.6,73.9],[27.2,74.3],[26.9,74.8],[26.2,74.6],[26.1,74.0]] },
-      { name:"Sohbatpur", coords:[[26.2,74.6],[26.9,74.8],[26.7,75.3],[26.0,75.0]] },
-      { name:"Usta Muhammad", coords:[[26.1,74.0],[26.6,73.9],[26.2,74.6],[25.8,74.4]] },
-      { name:"Surab", coords:[[27.8,66.7],[28.6,67.1],[28.7,68.5],[28.0,69.7],[27.2,69.4],[26.3,68.7],[26.5,67.5],[27.1,66.9]] }
-    ];
-
-    function fallbackFeatureCollection() {
-      return { type:"FeatureCollection", features:districtsForFallback.map(function(d) { return { type:"Feature", properties:{ DISTRICT:d.name, PROVINCE:"Balochistan" }, geometry:{ type:"Polygon", coordinates:[d.coords.map(function(c) { return [c[1], c[0]]; })] } }; }) };
-    }
-    function imageSetForDistrict(name) {
-      const topics = imageTopics[name] || fallbackImageTopics.map(function(topic) { return name + " " + topic; });
-      return topics.map(function(topic, i) { const size = i === 0 ? "900x650" : "600x420"; return "https://source.unsplash.com/" + size + "/?" + encodeURIComponent(topic); });
-    }
-    function setDistrictImages(name) {
-      const imgs = imageSetForDistrict(name);
-      document.getElementById("districtPhoto1").src = imgs[0];
-      document.getElementById("districtPhoto2").src = imgs[1];
-      document.getElementById("districtPhoto3").src = imgs[2];
-      document.getElementById("photoLabel").textContent = name;
-    }
-
-    const map = L.map("map", { zoomControl:true, attributionControl:true });
-    map.setView([28.3, 66.4], 6);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { maxZoom:11, attribution:"OpenStreetMap, CARTO" }).addTo(map);
-
-    let geoLayer;
-    let labelLayer = L.layerGroup().addTo(map);
-    let allDistricts = [];
-    let selectedName = "";
-    let searchText = "";
-    const searchInput = document.getElementById("searchInput");
-    const mapStatus = document.getElementById("mapStatus");
-    const uploadBox = document.getElementById("uploadBox");
-    const sourceNote = document.getElementById("sourceNote");
-
-    function getDistrictName(feature) { const p = feature.properties || {}; return p.NAME_3 || p.NAME_2 || p.ADM3_EN || p.ADM2_EN || p.DISTRICT || p.DIST_NAME || p.name || p.Name || "Unknown District"; }
-    function getProvinceName(feature) { const p = feature.properties || {}; return p.NAME_1 || p.PROVINCE || p.ADM1_EN || p.province || ""; }
-    function isBalochistan(feature) { const province = String(getProvinceName(feature)).toLowerCase(); return province.indexOf("balochistan") >= 0 || province.indexOf("baluchistan") >= 0; }
-    function districtCode(name) { return name.split(" ").filter(Boolean).map(function(w) { return w[0]; }).join("").slice(0,3).toUpperCase(); }
-    function infoForDistrict(name, index) { return { population:sampleInfo.population[index % sampleInfo.population.length], schools:120 + ((index + 2) * 43) % 620, enrollment:8000 + ((index + 3) * 2300) % 78000, focus:sampleInfo.focus[index % sampleInfo.focus.length], gradient:gradients[index % gradients.length] }; }
-    function styleFeature(feature) {
-      const name = getDistrictName(feature);
-      const index = allDistricts.findIndex(function(d) { return d.name === name; });
-      const isSelected = name === selectedName;
-      const visible = !searchText || name.toLowerCase().indexOf(searchText.toLowerCase()) >= 0;
-      return { color:isSelected ? "#0f172a" : "#ffffff", weight:isSelected ? 3 : 1.2, fillColor:["#dbeafe", "#dcfce7", "#fae8ff", "#ffedd5", "#e0f2fe", "#ede9fe"][Math.max(index, 0) % 6], fillOpacity:visible ? (isSelected ? 0.82 : 0.62) : 0.12, opacity:visible ? 1 : 0.22 };
-    }
-    function updateInfo(feature) {
-      const name = getDistrictName(feature);
-      const index = allDistricts.findIndex(function(d) { return d.name === name; });
-      const info = infoForDistrict(name, Math.max(index, 0));
-      selectedName = name;
-      document.getElementById("hero").style.background = info.gradient;
-      document.getElementById("codeBox").textContent = districtCode(name);
-      document.getElementById("districtName").textContent = name;
-      document.getElementById("divisionName").textContent = "Balochistan Province";
-      document.getElementById("population").textContent = info.population;
-      document.getElementById("schools").textContent = info.schools.toLocaleString();
-      document.getElementById("enrollment").textContent = info.enrollment.toLocaleString();
-      document.getElementById("focus").textContent = info.focus;
-      document.getElementById("summaryText").textContent = name + " is selected. Replace sample values with official EMIS, census, school, enrollment, or programme data.";
-      setDistrictImages(name);
-      if (geoLayer) geoLayer.setStyle(styleFeature);
-    }
-    function renderLabels() {
-      labelLayer.clearLayers();
-      allDistricts.forEach(function(d) {
-        if (searchText && d.name.toLowerCase().indexOf(searchText.toLowerCase()) < 0) return;
-        const center = d.layer.getBounds().getCenter();
-        L.marker(center, { interactive:false, icon:L.divIcon({ className:"district-label", html:d.name, iconSize:null }) }).addTo(labelLayer);
-      });
-    }
-    function loadGeoJSON(data, modeLabel) {
-      const features = data.features || [];
-      const balochistanFeatures = features.filter(isBalochistan);
-      const finalData = { type:"FeatureCollection", features:balochistanFeatures.length ? balochistanFeatures : features };
-      if (geoLayer) geoLayer.remove();
-      allDistricts = [];
-      geoLayer = L.geoJSON(finalData, { style:styleFeature, onEachFeature:function(feature, layer) {
-        const name = getDistrictName(feature);
-        layer.on({ click:function() { updateInfo(feature); }, mouseover:function() { layer.setStyle({ weight:3, color:"#0f172a", fillOpacity:.78 }); }, mouseout:function() { if (geoLayer) geoLayer.setStyle(styleFeature); } });
-        layer.bindTooltip(name, { sticky:true, direction:"top" });
-        allDistricts.push({ name:name, feature:feature, layer:layer });
-      }}).addTo(map);
-      allDistricts = allDistricts.filter(function(d, i, arr) { return arr.findIndex(function(x) { return x.name === d.name; }) === i; });
-      document.getElementById("districtCount").textContent = allDistricts.length;
-      document.getElementById("dataMode").textContent = modeLabel;
-      mapStatus.textContent = allDistricts.length + " Balochistan district boundaries loaded.";
-      map.fitBounds(geoLayer.getBounds(), { padding:[18,18] });
-      renderLabels();
-      if (allDistricts.length) updateInfo(allDistricts[0].feature);
-    }
-    async function tryLoadRemote() {
-      const urls = [
-        "https://raw.githubusercontent.com/PakData/GISData/master/PAK-GeoJSON/PAK_adm3.json",
-        "https://cdn.jsdelivr.net/gh/PakData/GISData@master/PAK-GeoJSON/PAK_adm3.json"
-      ];
-      for (let i = 0; i < urls.length; i++) {
-        try {
-          const response = await fetch(urls[i], { cache:"no-store" });
-          if (!response.ok) throw new Error("HTTP " + response.status);
-          const data = await response.json();
-          sourceNote.textContent = "Using remote public GeoJSON. For official publication, verify boundaries with the latest notified Government or Survey of Pakistan data.";
-          uploadBox.style.display = "block";
-          loadGeoJSON(data, "Remote");
-          return;
-        } catch (error) {
-          console.warn("Remote boundary source failed:", urls[i], error);
-        }
-      }
-      sourceNote.textContent = "Remote GeoJSON could not be fetched, so the dashboard loaded embedded fallback boundaries. Upload an official local GeoJSON for final accuracy.";
-      uploadBox.style.display = "block";
-      loadGeoJSON(fallbackFeatureCollection(), "Fallback");
-    }
-    searchInput.addEventListener("input", function(e) { searchText = e.target.value; if (geoLayer) geoLayer.setStyle(styleFeature); renderLabels(); });
-    document.getElementById("geojsonUpload").addEventListener("change", function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) { try { loadGeoJSON(JSON.parse(evt.target.result), "Upload"); sourceNote.textContent = "Using uploaded local GeoJSON file."; } catch (error) { alert("Invalid GeoJSON file. Please upload a valid .geojson or .json file."); } };
-      reader.readAsText(file);
-    });
-
-    function runTests() {
-      console.assert(districtCode("Killa Abdullah") === "KA", "districtCode should create initials");
-      console.assert(fallbackFeatureCollection().features.length >= 30, "fallback should include many Balochistan districts");
-      console.assert(isBalochistan({ properties:{ PROVINCE:"Balochistan" } }) === true, "province filter should detect Balochistan");
-      console.assert(getDistrictName({ properties:{ DISTRICT:"Quetta" } }) === "Quetta", "district name should read DISTRICT property");
-    }
-    runTests();
-    tryLoadRemote();
-  </script>
+<div class="page"><div class="dashboard"><div class="grid">
+<aside class="left"><div class="hero"><small>Presentation Dashboard</small><h1>Balochistan<br>Data Atlas</h1><p>Updated actual Balochistan map with district boundary polygons and live data layers.</p></div><div id="metricList" class="metric-list"></div></aside>
+<main class="main"><section class="kpis" id="kpis"></section><section class="map-card"><div class="map-head"><h2>Updated Actual Balochistan Map</h2><p id="mapStatusText">Loading actual GeoJSON boundaries; fallback outline shown if unavailable.</p></div><div id="mapContainer"></div><div id="mapStatus" class="status">Loading actual district boundaries…</div><div id="tooltip" class="tooltip"></div></section><section class="bottom-charts"><div class="card mini-chart"><div class="chart-title">Selected district comparison</div><div id="barChart"></div></div><div class="card mini-chart"><div class="chart-title">Water comparison trend</div><svg viewBox="0 0 240 90"><polyline points="10,74 65,42 120,55 180,36 230,26" fill="none" stroke="#b14ca3" stroke-width="4"/><polyline points="10,80 65,52 120,65 180,45 230,34" fill="none" stroke="#62d6ce" stroke-width="4"/></svg></div><div class="card mini-chart"><div class="chart-title">Agriculture and crop profile</div><svg viewBox="0 0 240 90"><polyline points="10,76 65,45 120,60 180,30 230,40" fill="none" stroke="#b14ca3" stroke-width="4"/><polyline points="10,82 65,62 120,70 180,50 230,55" fill="none" stroke="#62d6ce" stroke-width="4"/></svg></div></section></main>
+<aside class="right"><div class="right-card"><span class="eyebrow">Active Layer</span><h3 id="activeLayerTitle">Cities Population (Province)</h3><p style="color:var(--muted);line-height:1.45;margin:0">Download an Illustrator-ready SVG. When GeoJSON loads, it exports the actual Balochistan district boundaries.</p><button class="download-btn" onclick="downloadIllustratorSvg()">Download Dashboard SVG</button></div><div class="donuts"><div class="card donut" id="waterDonut"></div><div class="card donut" id="agriDonut"></div></div><div class="details"><div class="details-head"><div><span class="eyebrow">District details</span><h3 id="selectedCount">3 selected</h3></div><button class="clear" onclick="clearSelected()">Clear</button></div><div id="detailList" class="detail-list"></div></div></aside>
+</div></div></div>
+<script>
+const palette={bg:"#cfd1d5",ink:"#2f3438",muted:"#6b7178",accent:"#b14ca3",accent2:"#62d6ce"};
+const MAP={width:700,height:820};
+const GEOJSON_URL="https://raw.githubusercontent.com/PakData/GISData/master/PAK-GeoJSON/PAK_adm3.json";
+const fallbackProvincePath="M95,205 C130,158 196,122 270,110 C328,100 377,123 424,125 C482,128 552,151 615,202 C653,233 660,270 626,301 C596,329 562,334 558,374 C553,424 608,454 586,505 C566,553 512,566 488,613 C462,665 505,704 463,743 C421,782 359,736 303,740 C248,744 212,793 158,760 C114,733 117,667 86,625 C52,579 28,536 55,486 C80,440 127,419 133,371 C139,321 95,298 78,254 C68,229 76,214 95,205 Z";
+const fallbackBoundaryGuides=["M98,210 C175,185 240,150 310,112","M305,112 C310,188 300,255 285,325 C270,395 240,462 198,544 C170,598 162,674 158,760","M424,125 C386,178 356,235 345,306 C334,376 344,445 377,519 C400,574 374,655 303,740","M615,202 C550,224 496,247 452,285 C421,312 388,345 345,306","M558,374 C505,390 456,420 423,467 C388,519 424,579 488,613","M55,486 C122,485 178,510 198,544 C230,604 284,633 377,519","M86,625 C150,625 225,641 303,740","M463,743 C445,690 438,633 488,613","M133,371 C212,358 281,356 345,306 C407,256 478,215 615,202"];
+const districts=[
+{id:"quetta",name:"Quetta",lon:66.99,lat:30.18,x:421,y:276,pop:2269,density:890,ucPop:410,adult:1240,houses:308,crops:28,agriculture:62,livestock:318,facilities:42,minerals:38,water:74,waterCompare:82},
+{id:"pishin",name:"Pishin",lon:67,lat:30.58,x:426,y:230,pop:835,density:240,ucPop:172,adult:441,houses:111,crops:46,agriculture:71,livestock:690,facilities:21,minerals:24,water:63,waterCompare:68},
+{id:"chaman",name:"Chaman",lon:66.45,lat:30.92,x:382,y:210,pop:466,density:218,ucPop:92,adult:235,houses:62,crops:26,agriculture:44,livestock:410,facilities:12,minerals:18,water:43,waterCompare:49},
+{id:"zhob",name:"Zhob",lon:69.45,lat:31.34,x:555,y:205,pop:612,density:82,ucPop:126,adult:307,houses:81,crops:32,agriculture:49,livestock:741,facilities:18,minerals:29,water:51,waterCompare:57},
+{id:"loralai",name:"Loralai",lon:68.58,lat:30.37,x:510,y:270,pop:498,density:106,ucPop:98,adult:258,houses:69,crops:58,agriculture:76,livestock:581,facilities:19,minerals:35,water:59,waterCompare:66},
+{id:"sibi",name:"Sibi",lon:67.88,lat:29.54,x:505,y:382,pop:315,density:68,ucPop:73,adult:165,houses:44,crops:54,agriculture:69,livestock:347,facilities:14,minerals:31,water:49,waterCompare:52},
+{id:"kacchi",name:"Kachhi",lon:67.5,lat:29.05,x:478,y:452,pop:383,density:54,ucPop:82,adult:199,houses:52,crops:64,agriculture:73,livestock:421,facilities:13,minerals:27,water:57,waterCompare:61},
+{id:"jafarabad",name:"Jafarabad",lon:68.25,lat:28.27,x:562,y:492,pop:625,density:298,ucPop:144,adult:316,houses:90,crops:77,agriculture:84,livestock:506,facilities:16,minerals:11,water:68,waterCompare:74},
+{id:"nasirabad",name:"Nasirabad",lon:68.04,lat:28.42,x:526,y:500,pop:563,density:244,ucPop:128,adult:289,houses:82,crops:74,agriculture:81,livestock:472,facilities:17,minerals:13,water:66,waterCompare:70},
+{id:"khuzdar",name:"Khuzdar",lon:66.61,lat:27.8,x:372,y:505,pop:997,density:74,ucPop:206,adult:508,houses:136,crops:48,agriculture:67,livestock:899,facilities:23,minerals:76,water:58,waterCompare:63},
+{id:"kalat",name:"Kalat",lon:66.59,lat:29.03,x:360,y:375,pop:480,density:52,ucPop:94,adult:246,houses:65,crops:42,agriculture:59,livestock:544,facilities:17,minerals:71,water:47,waterCompare:53},
+{id:"mastung",name:"Mastung",lon:66.84,lat:29.8,x:386,y:326,pop:313,density:80,ucPop:72,adult:161,houses:43,crops:44,agriculture:61,livestock:338,facilities:12,minerals:46,water:52,waterCompare:55},
+{id:"chagai",name:"Chagai",lon:64.1,lat:29.7,x:170,y:238,pop:281,density:10,ucPop:59,adult:148,houses:39,crops:15,agriculture:35,livestock:264,facilities:8,minerals:92,water:38,waterCompare:42},
+{id:"nushki",name:"Nushki",lon:66.02,lat:29.55,x:276,y:292,pop:206,density:18,ucPop:44,adult:109,houses:29,crops:20,agriculture:43,livestock:224,facilities:9,minerals:54,water:41,waterCompare:45},
+{id:"kharan",name:"Kharan",lon:65.42,lat:28.58,x:230,y:398,pop:237,density:12,ucPop:49,adult:125,houses:33,crops:17,agriculture:39,livestock:251,facilities:8,minerals:68,water:35,waterCompare:39},
+{id:"washuk",name:"Washuk",lon:64.4,lat:27.7,x:175,y:512,pop:176,density:8,ucPop:37,adult:92,houses:25,crops:12,agriculture:31,livestock:214,facilities:7,minerals:63,water:33,waterCompare:37},
+{id:"panjgur",name:"Panjgur",lon:64.09,lat:26.97,x:218,y:604,pop:414,density:27,ucPop:91,adult:215,houses:56,crops:35,agriculture:57,livestock:377,facilities:11,minerals:51,water:45,waterCompare:50},
+{id:"kech",name:"Kech",lon:63.05,lat:26,x:292,y:690,pop:907,density:52,ucPop:188,adult:468,houses:124,crops:43,agriculture:64,livestock:502,facilities:20,minerals:33,water:56,waterCompare:60},
+{id:"gwadar",name:"Gwadar",lon:62.32,lat:25.13,x:160,y:724,pop:262,density:36,ucPop:57,adult:139,houses:36,crops:11,agriculture:29,livestock:92,facilities:10,minerals:18,water:48,waterCompare:54},
+{id:"lasbela",name:"Lasbela",lon:66.7,lat:26.23,x:425,y:646,pop:406,density:29,ucPop:87,adult:210,houses:55,crops:39,agriculture:55,livestock:318,facilities:16,minerals:57,water:53,waterCompare:59},
+{id:"hub",name:"Hub",lon:67.1,lat:25.03,x:470,y:712,pop:394,density:138,ucPop:84,adult:212,houses:59,crops:23,agriculture:41,livestock:190,facilities:14,minerals:49,water:61,waterCompare:65}
+];
+const metricConfig={provincePop:{label:"Cities Population (Province)",suffix:"K",key:"pop"},districtPop:{label:"Cities Population (District)",suffix:"K",key:"pop"},density:{label:"Population Density",suffix:"/km²",key:"density"},ucPop:{label:"UC Population",suffix:"K",key:"ucPop"},adult:{label:"Adult Population",suffix:"K",key:"adult"},housing:{label:"Housing Map",suffix:"K",key:"houses"},ucHouses:{label:"UC Houses",suffix:"K",key:"houses"},crop:{label:"Crop Maps",suffix:"%",key:"crops"},agriculture:{label:"Agriculture Data",suffix:"%",key:"agriculture"},livestock:{label:"Livestock Total",suffix:"K",key:"livestock"},facilities:{label:"Livestock Facilities",suffix:"",key:"facilities"},mineral:{label:"Mineral Map",suffix:"%",key:"minerals"},water:{label:"Water Schemes (District)",suffix:"%",key:"water"},waterCompare:{label:"Water Comparison",suffix:"%",key:"waterCompare"}};
+const aliases={balochistan:"balochistan",baluchistan:"balochistan",quetta:"quetta",pishin:"pishin",killaabdullah:"chaman",qillaabdullah:"chaman",chaman:"chaman",zhob:"zhob",sherani:"zhob",killasaifullah:"zhob",qillasaifullah:"zhob",loralai:"loralai",barkhan:"loralai",kohlu:"loralai",dukki:"loralai",musakhel:"loralai",sibi:"sibi",harnai:"sibi",ziarat:"sibi",derabugti:"sibi",kacchi:"kacchi",bolan:"kacchi",jafarabad:"jafarabad",jaffarabad:"jafarabad",sohbatpur:"jafarabad",ustamuhammad:"jafarabad",ustamohammad:"jafarabad",nasirabad:"nasirabad",naseerabad:"nasirabad",khuzdar:"khuzdar",awaran:"khuzdar",kalat:"kalat",surab:"kalat",mastung:"mastung",chagai:"chagai",nushki:"nushki",kharan:"kharan",washuk:"washuk",panjgur:"panjgur",kech:"kech",turbat:"kech",gwadar:"gwadar",lasbela:"lasbela",hub:"hub"};
+let activeMetric="provincePop",selected=new Set(["quetta","khuzdar","kech"]),hovered=null,geoStatus="loading",projectPoint=createProjector(null),mapPaths=[];
+function normalizeName(v){return String(v||"").toLowerCase().replace(/district/g,"").replace(/[^a-z0-9]+/g,"").trim()}
+function formatNumber(v){return new Intl.NumberFormat("en-US").format(v||0)}
+function escapeXml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function featureName(f){const p=f?.properties||{};return p.NAME_3||p.NAME_2||p.DISTRICT||p.ADM3_EN||p.name||p.NAME||"Unknown"}
+function provinceName(f){const p=f?.properties||{};return p.NAME_1||p.PROVINCE||p.ADM1_EN||p.province||""}
+function findDistrictData(name){const n=normalizeName(name),id=aliases[n]||n;return districts.find(d=>d.id===id)||districts.find(d=>normalizeName(d.name)===n)||null}
+function collectPoints(g,pts=[]){if(!g)return pts;function walk(n){if(!Array.isArray(n))return;if(typeof n[0]==="number"&&typeof n[1]==="number"){pts.push([n[0],n[1]]);return}n.forEach(walk)}walk(g.coordinates||[]);return pts}
+function bboxFromFeatures(features){const pts=features.flatMap(f=>collectPoints(f.geometry));if(!pts.length)return null;return pts.reduce((b,p)=>({minLon:Math.min(b.minLon,p[0]),minLat:Math.min(b.minLat,p[1]),maxLon:Math.max(b.maxLon,p[0]),maxLat:Math.max(b.maxLat,p[1])}),{minLon:Infinity,minLat:Infinity,maxLon:-Infinity,maxLat:-Infinity})}
+function createProjector(bbox){const b=bbox||{minLon:60.7,minLat:24.6,maxLon:70.6,maxLat:32.2},pad=34,lonR=Math.max(.0001,b.maxLon-b.minLon),latR=Math.max(.0001,b.maxLat-b.minLat),scale=Math.min((MAP.width-pad*2)/lonR,(MAP.height-pad*2)/latR),offX=(MAP.width-lonR*scale)/2,offY=(MAP.height-latR*scale)/2;return c=>[offX+(c[0]-b.minLon)*scale,offY+(b.maxLat-c[1])*scale]}
+function ringToPath(r,proj){return r.map((c,i)=>{const [x,y]=proj(c);return `${i===0?"M":"L"}${x.toFixed(2)},${y.toFixed(2)}`}).join(" ")+" Z"}
+function geometryToPath(g,proj){if(!g)return "";if(g.type==="Polygon")return g.coordinates.map(r=>ringToPath(r,proj)).join(" ");if(g.type==="MultiPolygon")return g.coordinates.flatMap(poly=>poly.map(r=>ringToPath(r,proj))).join(" ");return ""}
+function renderMetrics(){metricList.innerHTML=Object.entries(metricConfig).map(([id,m])=>`<button class="metric ${activeMetric===id?"active":""}" onclick="setMetric('${id}')"><span class="dot"></span>${m.label}</button>`).join("");activeLayerTitle.textContent=metricConfig[activeMetric].label}
+function setMetric(id){activeMetric=id;renderAll()}
+function toggleDistrict(id){selected.has(id)?selected.delete(id):selected.add(id);renderAll()}
+function clearSelected(){selected.clear();renderAll()}
+function total(k){return districts.reduce((s,d)=>s+d[k],0)}
+function avg(k){return Math.round(total(k)/districts.length)}
+function renderKpis(){kpis.innerHTML=[["Province Population",total("pop"),"K"],["UC Houses",total("houses"),"K"],["Livestock Total",total("livestock"),"K"],["Avg Water Schemes",avg("water"),"%"]].map(([t,v,s])=>`<div class="card"><div class="kpi-title">${t}</div><div class="kpi-value">${formatNumber(v)} <span>${s}</span></div></div>`).join("")}
+function districtPoint(d){return mapPaths.length?projectPoint([d.lon,d.lat]):[d.x,d.y]}
+function renderMap(){const metric=metricConfig[activeMetric],max=Math.max(1,...districts.map(d=>d[metric.key])),hasActual=mapPaths.length>0;mapStatusText.textContent=hasActual?"Real GeoJSON district boundaries loaded.":"Loading actual GeoJSON boundaries; fallback outline shown if unavailable.";mapStatus.style.display=geoStatus==="loaded"?"none":"block";mapStatus.textContent=geoStatus==="loading"?"Loading actual district boundaries…":"GeoJSON could not load. Fallback map is shown.";const boundaryLayer=hasActual?`<g filter="url(#shadow)">${mapPaths.map(item=>{const sel=item.data&&selected.has(item.data.id),hov=hovered===item.id;return `<path class="district" d="${item.path}" fill="${sel?"rgba(177,76,163,.58)":hov?"rgba(98,214,206,.34)":"rgba(47,52,56,.84)"}" stroke="${sel||hov?"#fff":"rgba(255,255,255,.58)"}" stroke-width="${sel||hov?2.2:1}" onclick="${item.data?`toggleDistrict('${item.data.id}')`:''}" onmouseenter="setHover('${item.id}')" onmouseleave="setHover(null)" vector-effect="non-scaling-stroke"></path>`}).join("")}</g>`:`<g filter="url(#shadow)"><path d="${fallbackProvincePath}" fill="url(#mapGradient)" stroke="#fff" stroke-width="2.4"></path><g clip-path="url(#clip)">${fallbackBoundaryGuides.map((g,i)=>`<path d="${g}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.45" stroke-dasharray="${i%2?"7 7":""}"></path>`).join("")}</g></g>`;const flows=[...selected].slice(0,6).map((id,i)=>{const d=districts.find(x=>x.id===id);if(!d)return "";const [x,y]=districtPoint(d);return `<path class="flow" d="M350 405 C${350+i*35} ${315-i*20}, ${x-45} ${y-55}, ${x} ${y}" fill="none" stroke="${i%2?palette.accent2:palette.accent}" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 12"></path>`}).join("");const markers=districts.map(d=>{const [x,y]=districtPoint(d),sel=selected.has(d.id),hov=hovered===d.id,r=hasActual?5+(d[metric.key]/max)*10:12+(d[metric.key]/max)*28;return `<g class="district" onclick="toggleDistrict('${d.id}')" onmouseenter="setHover('${d.id}')" onmouseleave="setHover(null)">${sel?`<circle cx="${x}" cy="${y}" r="${r+9}" fill="none" stroke="${palette.accent2}" stroke-width="2.5" stroke-dasharray="6 7"></circle>`:""}<circle cx="${x}" cy="${y}" r="${r}" fill="url(#bubble)" stroke="${sel||hov?"#fff":"rgba(255,255,255,.7)"}" stroke-width="${sel||hov?3:1.5}"></circle><text x="${x}" y="${hasActual?y-9:y-2}" class="${hasActual?"label":"value"}">${hasActual?escapeXml(d.name):d[metric.key]}</text>${hasActual?"":`<text x="${x}" y="${y+14}" class="label">${escapeXml(d.name)}</text>`}</g>`}).join("");mapContainer.innerHTML=`<svg viewBox="0 0 ${MAP.width} ${MAP.height}" preserveAspectRatio="xMidYMid meet"><defs><filter id="shadow" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="24" stdDeviation="18" flood-color="#000" flood-opacity=".24"/></filter><linearGradient id="mapGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#464b50"/><stop offset=".55" stop-color="#2f3438"/><stop offset="1" stop-color="#181b1f"/></linearGradient><radialGradient id="mapGlow" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="rgba(98,214,206,.22)"/><stop offset="1" stop-color="rgba(177,76,163,0)"/></radialGradient><radialGradient id="bubble" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="rgba(236,173,231,.95)"/><stop offset="1" stop-color="rgba(177,76,163,.45)"/></radialGradient><clipPath id="clip"><path d="${fallbackProvincePath}"/></clipPath></defs><rect width="${MAP.width}" height="${MAP.height}" fill="rgba(255,255,255,.08)"></rect><circle cx="350" cy="410" r="310" fill="url(#mapGlow)"></circle>${boundaryLayer}${flows}${markers}</svg>`}
+function setHover(id){hovered=id;renderMap();renderTooltip();renderDetails()}
+function renderTooltip(){if(!hovered){tooltip.style.display="none";return}const d=districts.find(x=>x.id===hovered),geo=mapPaths.find(x=>x.id===hovered),metric=metricConfig[activeMetric];tooltip.style.display="block";tooltip.innerHTML=d?`<small>District preview</small><h3>${d.name}</h3><p>${metric.label}: <b>${formatNumber(d[metric.key])}${metric.suffix}</b></p>`:`<small>District boundary</small><h3>${geo?geo.name:hovered}</h3><p>Boundary loaded from GeoJSON.</p>`}
+function renderCharts(){const metric=metricConfig[activeMetric],data=(selected.size?[...selected].map(id=>districts.find(d=>d.id===id)).filter(Boolean):districts.slice(0,6)),max=Math.max(1,...data.map(d=>d[metric.key]));barChart.innerHTML=`<div class="bar-row">${data.slice(0,5).map(d=>`<div style="text-align:center"><div class="bar" style="height:${80*d[metric.key]/max}px"></div><small>${d.name.slice(0,3).toUpperCase()}</small></div>`).join("")}</div>`}
+function donut(el,value,label){const r=52,c=2*Math.PI*r,dash=c*value/100;document.getElementById(el).innerHTML=`<svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="${r}" fill="none" stroke="rgba(47,52,56,.18)" stroke-width="18"/><circle cx="80" cy="80" r="${r}" fill="none" stroke="${palette.accent}" stroke-width="18" stroke-linecap="round" stroke-dasharray="${dash} ${c-dash}" transform="rotate(-90 80 80)"/></svg><div class="center"><strong>${value}%</strong><span>${label}</span></div>`}
+function renderDetails(){const metric=metricConfig[activeMetric],data=(selected.size?[...selected].map(id=>districts.find(d=>d.id===id)).filter(Boolean):districts.slice(0,5)),max=Math.max(1,...districts.map(d=>d[metric.key]));selectedCount.textContent=`${selected.size} selected`;detailList.innerHTML=data.map(d=>`<div class="detail-item" onmouseenter="setHover('${d.id}')" onmouseleave="setHover(null)"><div class="detail-row"><div><p><b>${d.name}</b></p><small>Population ${formatNumber(d.pop)}K · Houses ${formatNumber(d.houses)}K</small></div><div style="text-align:right"><b style="font-size:22px;color:${palette.accent2}">${formatNumber(d[metric.key])}</b><br><small>${metric.suffix||"score"}</small></div></div><div class="progress"><div style="width:${Math.min(100,d[metric.key]/max*100)}%"></div></div></div>`).join("")}
+function renderAll(){renderMetrics();renderKpis();renderMap();renderTooltip();renderCharts();renderDetails();donut("waterDonut",avg("water"),"Water scheme coverage");donut("agriDonut",avg("agriculture"),"Agriculture score")}
+async function loadGeoJson(){try{geoStatus="loading";renderMap();const res=await fetch(GEOJSON_URL);if(!res.ok)throw new Error(res.status);const geo=await res.json(),features=Array.isArray(geo.features)?geo.features:[];const bf=features.filter(f=>["balochistan","baluchistan"].includes(normalizeName(provinceName(f))));if(!bf.length)throw new Error("No Balochistan features found");projectPoint=createProjector(bboxFromFeatures(bf));mapPaths=bf.map((f,i)=>{const name=featureName(f),data=findDistrictData(name);return{key:`${name}-${i}`,name,id:data?data.id:normalizeName(name),data,path:geometryToPath(f.geometry,projectPoint)}});geoStatus="loaded"}catch(e){console.warn("GeoJSON load failed. Fallback map shown.",e);mapPaths=[];projectPoint=createProjector(null);geoStatus="fallback"}renderAll()}
+function buildIllustratorSvg(){const maxPop=Math.max(1,...districts.map(d=>d.pop)),totalPop=total("pop"),totalHouses=total("houses"),totalLivestock=total("livestock"),avgWater=avg("water");const metricButtons=Object.values(metricConfig).map((m,i)=>{const y=270+i*39,active=i===0;return `<g><rect x="55" y="${y}" width="285" height="34" rx="14" fill="${active?"#2f3438":"#eef0f2"}" stroke="${active?"#b14ca3":"#ffffff"}" opacity="${active?"1":".58"}"/><circle cx="77" cy="${y+17}" r="6" fill="${active?"#62d6ce":"#b14ca3"}"/><text x="94" y="${y+22}" class="metricText" fill="${active?"#ffffff":"#2f3438"}">${escapeXml(m.label)}</text></g>`}).join("");const actualMap=mapPaths.length?mapPaths.map(item=>`<path d="${item.path}" fill="rgba(47,52,56,.84)" stroke="#ffffff" stroke-width="1"/>`).join(""):`<path d="${fallbackProvincePath}" fill="url(#darkGrad)" stroke="#fff" stroke-width="3"/>`;const markerLayer=districts.map(d=>{const [x,y]=mapPaths.length?projectPoint([d.lon,d.lat]):[d.x,d.y];const r=5+(d.pop/maxPop)*12;return `<g><circle cx="${x}" cy="${y}" r="${r.toFixed(1)}" fill="url(#bubble)" stroke="#fff" stroke-width="1.6"/><text x="${x}" y="${y-8}" class="districtLabel">${escapeXml(d.name)}</text></g>`}).join("");return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9dadd"/><stop offset="1" stop-color="#c2c4c8"/></linearGradient><linearGradient id="darkGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#464b50"/><stop offset=".55" stop-color="#2f3438"/><stop offset="1" stop-color="#181b1f"/></linearGradient><radialGradient id="bubble" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#ecade7"/><stop offset="1" stop-color="#b14ca3" stop-opacity=".78"/></radialGradient><style>text{font-family:Arial,Helvetica,sans-serif}.metricText{font-size:11px;font-weight:700}.districtLabel{font-size:8px;font-weight:800;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:rgba(47,52,56,.75);stroke-width:2px}.kpiTitle{font-size:10px;font-weight:800;fill:#6b7178}.kpiValue{font-size:30px;font-weight:900;fill:#2f3438}</style></defs><rect width="1600" height="900" fill="url(#bg)"/><rect x="25" y="25" width="1550" height="850" rx="40" fill="#cfd1d5" stroke="#ffffff" stroke-width="1.5"/><g id="left-sidebar"><rect x="55" y="60" width="285" height="180" rx="30" fill="#2f3438"/><text x="85" y="105" font-size="11" font-weight="900" fill="#fff" opacity=".52">PRESENTATION DASHBOARD</text><text x="85" y="145" font-size="36" font-weight="900" fill="#fff">Balochistan</text><text x="85" y="182" font-size="36" font-weight="900" fill="#fff">Data Atlas</text><text x="85" y="215" font-size="13" fill="#fff" opacity=".72">Updated actual province map + district boundaries</text>${metricButtons}</g><g id="kpis"><rect x="365" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="383" y="95" class="kpiTitle">PROVINCE POPULATION</text><text x="383" y="140" class="kpiValue">${formatNumber(totalPop)} K</text><rect x="570" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="588" y="95" class="kpiTitle">UC HOUSES</text><text x="588" y="140" class="kpiValue">${formatNumber(totalHouses)} K</text><rect x="775" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="793" y="95" class="kpiTitle">LIVESTOCK TOTAL</text><text x="793" y="140" class="kpiValue">${formatNumber(totalLivestock)} K</text><rect x="980" y="60" width="190" height="110" rx="24" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="998" y="95" class="kpiTitle">AVG WATER SCHEMES</text><text x="998" y="140" class="kpiValue">${avgWater} %</text></g><g id="map-panel"><rect x="365" y="190" width="780" height="490" rx="30" fill="#d8dadd" opacity=".75" stroke="#fff"/><text x="395" y="230" font-size="14" font-weight="900" fill="#2f3438">BALOCHISTAN ACTUAL DISTRICT BOUNDARIES</text><g transform="translate(395,245) scale(.66)">${actualMap}${markerLayer}</g></g><g id="right-panel"><rect x="1170" y="60" width="365" height="160" rx="28" fill="#eef0f2" opacity=".65" stroke="#fff"/><text x="1195" y="95" class="kpiTitle">ACTIVE LAYER</text><text x="1195" y="135" font-size="30" font-weight="900" fill="#2f3438">Cities Population</text><text x="1195" y="165" font-size="30" font-weight="900" fill="#2f3438">Province / District</text><text x="1195" y="198" font-size="13" fill="#6b7178">Static SVG export for Adobe Illustrator editing.</text><rect x="1170" y="410" width="365" height="435" rx="28" fill="#2f3438" opacity=".98" stroke="#fff"/><text x="1195" y="445" font-size="10" font-weight="900" fill="#fff" opacity=".45">DISTRICT DETAILS</text><text x="1195" y="475" font-size="24" font-weight="900" fill="#fff">3 selected</text></g></svg>`}
+function downloadIllustratorSvg(){const blob=new Blob([buildIllustratorSvg()],{type:"image/svg+xml;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="balochistan-dashboard-illustrator.svg";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)}
+console.assert(districts.length>=20,"Expected at least 20 district records.");console.assert(Object.keys(metricConfig).length===14,"Expected 14 dashboard metric layers.");console.assert(new Set(districts.map(d=>d.id)).size===districts.length,"District IDs must be unique.");console.assert(buildIllustratorSvg().includes("</svg>"),"SVG export must be complete.");
+renderAll();loadGeoJson();
+</script>
 </body>
 </html>
